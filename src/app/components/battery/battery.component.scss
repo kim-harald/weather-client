@@ -1,0 +1,44 @@
+.segment {
+    width: 1em;
+    height: 0.5em;
+    display: block;
+    margin-top:2px;
+    margin-bottom: 2px;
+}
+
+.charging {
+    mask-image: url('../../../img/iconfinder_flash_4918896.svg');
+    height: 2.2em;
+    mask-size: contain;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    position: relative;
+    top:-7px;
+    background-color: yellow;
+    top: 2.22em;
+    left: -0.7em;
+}
+
+.green {
+    background-color: green;
+}
+
+.orange {
+    background-color: orange;
+}
+
+.yellow {
+    background-color: yellow;
+}
+
+.red {
+    background-color: red;
+}
+
+.battery-container {
+    width: 5em;
+    color: grey;
+    display: inline-block;
+    margin-left: 5em;
+}
+
