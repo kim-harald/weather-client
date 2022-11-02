@@ -11,7 +11,13 @@ export class ApiService {
   constructor(private readonly http:HttpClient) { }
 
   public get(location:string, fromDate:Date, toDate:Date): Observable<LocationReading[]> {
-    const url = `/api/weather/readings/${location}/${fromDate.valueOf()}/${toDate.valueOf()}`;
-    return this.http.get<LocationReading[]>(url);
+    const url = `https://kimharald.no/api/weather/readings/${location}/${fromDate.valueOf()}/${toDate.valueOf()}`;
+    return this.http.get<any[]>(url).pipe(
+      map(readings => readings.map(reading => {
+        return {
+          ...reading,
+          ts: reading.when
+        } as LocationReading
+      })))
   }
 }

@@ -9,6 +9,7 @@ import { RemoveCommaPipe } from './pipes/remove-comma.pipe';
 import { BatteryComponent } from './components/battery/battery.component';
 import { WeatherChartComponent } from './components/weather-chart/weather-chart.component';
 import { GoogleChartsModule } from 'angular-google-charts';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: env.mqtt.server,
@@ -27,10 +28,10 @@ const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   imports: [
     BrowserModule,
     MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
-    GoogleChartsModule
+    GoogleChartsModule,
+    HttpClientModule
   ],
   providers: [
-    
     RemoveCommaPipe
   ],
   bootstrap: [AppComponent]

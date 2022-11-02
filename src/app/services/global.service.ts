@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MqttService } from 'ngx-mqtt';
-import { concatMap, map, Observable, of } from 'rxjs';
+import { concatMap, forkJoin, map, merge, mergeMap, Observable, of } from 'rxjs';
 import { LocationReading } from '../models/locationreading';
 import { Reading } from '../models/reading';
 import { ApiService } from './api.service';
@@ -24,10 +24,9 @@ export class GlobalService {
       })
     );
 
-    const result$ = of([]).pipe(
-      concatMap(data => this.apiService.get(location, startDate, new Date())),
-      concatMap(data => mqtt$)
-    );
+    const http$ = this.apiService.get(location,startDate,new Date())
+
+    const result$ = merge(http$,mqtt$);
 
     return result$;
   }
