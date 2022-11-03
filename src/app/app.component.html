@@ -1,16 +1,2 @@
 <app-battery device="gimel"></app-battery>
 <app-weather-chart title="Goons" [data]="data"></app-weather-chart>
-<table>
-    <tr>
-        <th>ts</th>
-        <td>temperture</td>
-        <td>pressure</td>
-        <td>humidity</td>
-    </tr>
-    <tr *ngFor="let reading of data">
-        <td>{{ rounded(reading.ts,0) }}</td>
-        <td>{{ reading.temperature}}</td>
-        <td>{{ reading.pressure}}</td>
-        <td>{{ reading.humidity }} </td>
-    </tr>
-</table>

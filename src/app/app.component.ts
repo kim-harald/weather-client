@@ -43,7 +43,7 @@ export class AppComponent {
           location: 'Deck-1'
         });
 
-        this.data.sort((a, b) => b.ts - a.ts);
+        this.data.sort((a, b) => a.ts - b.ts);
         const start = new Date();
         start.setHours(start.getHours() - 2);
         this.data = this.data.filter(o => o.ts >= start.valueOf())

@@ -78,3 +78,6 @@ export const normalise = (temperature: number, pressure: number, humidity: numbe
     };
 }
 
+export const padLeft = (s:string, paddingValue:string) => {
+    return String( + s).slice(-paddingValue.length);
+}

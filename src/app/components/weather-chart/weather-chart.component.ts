@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ChartType, Column } from 'angular-google-charts';
+import { cKelvinOffset, padLeft } from 'src/app/common/common';
+import { LocationReading } from 'src/app/models/locationreading';
 
 
 @Component({
@@ -9,7 +11,7 @@ import { ChartType, Column } from 'angular-google-charts';
 })
 export class WeatherChartComponent implements OnInit {
 
-  private _data:any[] = [];
+  private _data: any[] = [];
 
   @Input()
   public labels: string[] = [];
@@ -30,21 +32,12 @@ export class WeatherChartComponent implements OnInit {
   public max: number | undefined;
 
   @Input()
-  public set data(v:any[]) {
+  public set data(v: any[]) {
     this._data = v ?? [];
-    this.columns =  ['when','temperature'];
-    this.chart.data = this._data.map(items => items.map((item:any) => {
-      return {
-        when:item.when,
-        temperature:item.temperature
-        // ,
-        // pressure:item.pressure,
-        // humidity: item.humidity 
-      }
-    }));
+    this.chart.data = convert(v);
   }
 
-  public get data():any[] {
+  public get data(): any[] {
     return this._data;
   }
 
@@ -58,10 +51,38 @@ export class WeatherChartComponent implements OnInit {
       type: ChartType.Line,
       data: this.data,
       options: {
-        colors: ['red', 'yellow', 'blue']
+        //colors: ['red', 'yellow', 'blue'],
+        height: 300,
+        width: 800,
+        chartArea: {
+          backgroundColor: {
+            fill: 'gray',
+            fillOpacity: 0.1
+          },
+        },
+        backgroundColor: {
+          fill: 'gray',
+          fillOpacity: 0.8
+        },
       }
     };
 
-    
+    this.columns = ['when', 'temperature'];
   }
+}
+
+const convert = (readings: LocationReading[]): any[] => {
+  const result: any[] = [];
+  readings.forEach(reading => {
+    const entry = [convertTime(reading.ts), reading.temperature - cKelvinOffset];
+    result.push(entry);
+  });
+  return result;
+}
+
+const convertTime = (ts: number): string => {
+  const d = new Date(ts);
+  const hh = d.getHours().toString().padStart(2,'0');
+  const mm = d.getMinutes().toString().padStart(2,'0');
+  return hh + ':' + mm;
 }
