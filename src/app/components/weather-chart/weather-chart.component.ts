@@ -51,19 +51,15 @@ export class WeatherChartComponent implements OnInit {
       type: ChartType.Line,
       data: this.data,
       options: {
-        //colors: ['red', 'yellow', 'blue'],
-        height: 300,
-        width: 800,
-        chartArea: {
-          backgroundColor: {
-            fill: 'gray',
-            fillOpacity: 0.1
-          },
-        },
-        backgroundColor: {
-          fill: 'gray',
-          fillOpacity: 0.8
-        },
+        hAxis: {
+          title: 'Time'
+       },
+       vAxis: {
+          title: 'Temperature'
+       },   
+       'width':550,
+       'height':400,
+       backgroundColor: '#f1f8e9'
       }
     };
 
