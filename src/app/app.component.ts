@@ -20,7 +20,7 @@ export class AppComponent {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 2);
     this.apiService.get('Deck-1', startDate, new Date()).pipe(
-      map(data => data.sort((a, b) => b.ts - a.ts)),
+      map(data => data.sort((a, b) => a.ts - b.ts)),
       map(data => data.map(item => {
         return {
           ...item,
