@@ -13,10 +13,21 @@ export class WeatherGaugeComponent implements OnInit {
   public min:number = 0;
 
   @Input() 
-  max:number = 100;
+  public max:number = 100;
 
   @Input()
-  value:number = 0;
+  public value:number = 0;
+
+  @Input()
+  public units:string = 'C';
+
+  public get angle():string {
+    return '-45deg';
+  }
+
+  public get angle1():string {
+    return '21.6deg';
+  }
 
   ngOnInit(): void {}
 }
