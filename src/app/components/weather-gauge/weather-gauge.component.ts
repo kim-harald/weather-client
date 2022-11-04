@@ -29,8 +29,10 @@ export class WeatherGaugeComponent implements OnInit {
     return this._value;
   }
 
-  public set value(v: number) {
-    this.update(v);
+  public set value(v: number | null) {
+    if (v) {
+      this.update(v);
+    }
   }
 
   private ctx: CanvasRenderingContext2D | undefined | null;
