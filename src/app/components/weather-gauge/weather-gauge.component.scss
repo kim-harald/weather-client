@@ -1,4 +1,22 @@
 canvas {
   display: inline-block;
   background-color: transparent;
+  position: relative;
+}
+
+.container {
+  display: block;
+  position: unset;
+}
+
+.text-container {
+  position: absolute;
+  width: 250px;
+  top: 210px;
+  text-align: center;
+}
+
+span {
+  z-index: 1;
+  font-size: 30px;
 }

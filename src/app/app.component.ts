@@ -15,7 +15,8 @@ export class AppComponent {
   public device = 'gimel';
   public data: ReadingDisplay[] = [];
   public rounded = rounded;
-
+  
+  public value= 0;
   constructor(private readonly apiService: ApiService, private readonly mqttService: MqttService) {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 2);
