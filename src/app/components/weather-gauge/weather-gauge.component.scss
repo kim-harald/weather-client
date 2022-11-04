@@ -24,3 +24,10 @@ span {
   z-index: 1;
   font-size: 30px;
 }
+
+.refresh {
+  border:10px solid rgba(0,255,0,0.3);
+  border-radius: 5px;
+}
+
+.refresh::after {}
