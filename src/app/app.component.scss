@@ -1,5 +1,5 @@
-app-weather-chart, app-weather-gauge {
-    display: inline;
+app-weather-chart {
+    display: inline-block;
 }
 
 p {
@@ -7,6 +7,12 @@ p {
 }
 
 app-weather-gauge {
-    background-color: white;
-    color:beige
+    display: inline-block;   
+}
+
+app-battery {
+    position: fixed;
+    top:1em;
+    right:1em;
+    z-index: 10;
 }

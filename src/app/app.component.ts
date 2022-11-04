@@ -3,7 +3,7 @@ import { MqttService } from 'ngx-mqtt';
 import { map } from 'rxjs';
 import { cKelvinOffset, rounded } from './common/common';
 import { LocationReading } from './models/locationreading';
-import { ReadingType } from './models/ReadingType';
+import { ReadingType } from './models/readingtype';
 import { ApiService } from './services/api.service';
 import { GlobalService } from './services/global.service';
 

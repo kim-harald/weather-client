@@ -1,8 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { MqttService } from 'ngx-mqtt';
-import { map } from 'rxjs';
-import { cKelvinOffset, rounded } from 'src/app/common/common';
-import { ReadingType } from 'src/app/models/ReadingType';
 
 @Component({
   selector: 'app-weather-gauge',

@@ -3,20 +3,21 @@ canvas {
   background-color: transparent;
   position: relative;
   padding: 0.3em;
-  background-color: #111;
+  background-color: transparent;
 }
 
 .container {
   display: block;
   position: relative;
-  padding:50px;
+  padding:0.5em;
 }
 
 .text-container {
   position: absolute;
   width: 230px;
-  bottom: 50px;
+  bottom:0.5em;
   text-align: center;
+  color: antiquewhite;
 }
 
 span {
