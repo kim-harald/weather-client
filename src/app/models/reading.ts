@@ -4,3 +4,4 @@ export type Reading = {
     pressure:number,
     humidity:number,
 }
+
