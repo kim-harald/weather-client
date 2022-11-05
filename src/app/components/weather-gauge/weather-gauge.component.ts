@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { MqttService } from 'ngx-mqtt';
 
 @Component({
@@ -6,11 +6,20 @@ import { MqttService } from 'ngx-mqtt';
   templateUrl: './weather-gauge.component.html',
   styleUrls: ['./weather-gauge.component.scss'],
 })
-export class WeatherGaugeComponent implements OnInit {
-  constructor(private readonly mqttService: MqttService) {}
+export class WeatherGaugeComponent implements OnInit, AfterViewInit, AfterContentInit {
+  constructor() { 
+    
+  }
+  ngAfterContentInit(): void {
+    
+  }
+  ngAfterViewInit(): void {
+    this.ctx = this.canvas.nativeElement.getContext('2d');
+    this.update(this._value);
+  }
 
   @ViewChild('gauge', { static: true })
-  canvas: ElementRef<HTMLCanvasElement> | undefined;
+  canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;
 
   @Input()
   public min: number = 0;
@@ -29,21 +38,26 @@ export class WeatherGaugeComponent implements OnInit {
     return this._value;
   }
 
-  public set value(v: number | null) {
-    if (v) {
-      this.update(v);
-    }
+  public set value(v: number) {
+    this._value = v;
+    this.update(v);
   }
+
+  public visibility = 'hidden';
 
   private ctx: CanvasRenderingContext2D | undefined | null;
   private _value: number = 0;
 
   ngOnInit(): void {
-    this.ctx = this.canvas?.nativeElement.getContext('2d');
+    
   }
 
   private update(v: number): void {
-    if (this.ctx && v !== this._value) {
+    this.visibility = 'visible'
+    setTimeout(() => {
+      this.visibility = 'hidden'
+    }, 500);
+    if (this.ctx) {
       this.ctx.clearRect(1, 1, 230, 120);
       this.ctx.beginPath();
 
@@ -53,7 +67,6 @@ export class WeatherGaugeComponent implements OnInit {
       this.ctx.strokeStyle = this.color;
       this.ctx.fillStyle = this.color;
       this.ctx.stroke();
-      this._value = v;
     }
   }
 }
@@ -68,11 +81,11 @@ const annulus = (
   endAngle: number,
   anticlockwise: boolean
 ) => {
-  ctx.lineWidth = width ; //width;
+  ctx.lineWidth = width; //width;
   let r = width * 0.65;
 
   var th1 = (startAngle * Math.PI) / 180;
   var th2 = (endAngle * Math.PI) / 180;
-  
- ctx.arc(centerX, centerY, radius, th1, th2, anticlockwise);
+
+  ctx.arc(centerX, centerY, radius, th1, th2, anticlockwise);
 };

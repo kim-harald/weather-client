@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MqttService } from 'ngx-mqtt';
 import { map, Subject } from 'rxjs';
 import { cKelvinOffset, rounded } from './common/common';
@@ -13,7 +13,7 @@ import { StorageService } from './services/storage.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   public device = 'gimel';
   public data: ReadingDisplay[] = [];
   public rounded = rounded;
@@ -22,16 +22,20 @@ export class AppComponent {
   public pressure: number = 0;
   public humidity: number = 0;
 
-  public temperature$: Subject<number> = new Subject<number>();
-  public pressure$: Subject<number> = new Subject<number>();
-  public humidity$: Subject<number> = new Subject<number>();
-
   public value = 0;
   constructor(
     private readonly apiService: ApiService,
     private readonly mqttService: MqttService,
     private readonly storageService: StorageService
-  ) {
+  ) { }
+
+  public ngOnInit(): void {
+    const t = this.storageService.get('temperature');
+
+    this.temperature = this.storageService.get('temperature');
+    this.pressure = this.storageService.get('pressure');
+    this.humidity = this.storageService.get('humidity');
+
     this.setupReadings();
     this.setupReadingListener();
   }
@@ -82,10 +86,7 @@ export class AppComponent {
   }
 
   private setupReadingListener() {
-    this.temperature$.next(this.storageService.get('temperature'));
-    this.pressure$.next(this.storageService.get('pressure'));
-    this.humidity$.next(this.storageService.get('humidity'));
-    
+
     this.mqttService.observe('gimel/sensor/#').subscribe((mqttMessage) => {
       const readingType = mqttMessage.topic.replace(
         'gimel/sensor/',
@@ -95,18 +96,15 @@ export class AppComponent {
       switch (readingType) {
         case 'temperature':
           this.temperature = rounded(value - cKelvinOffset, 1);
-          this.storageService.set('temperature',this.temperature);
-          this.temperature$.next(rounded(value - cKelvinOffset, 1));
+          this.storageService.set('temperature', this.temperature);
           return;
         case 'pressure':
           this.pressure = rounded(value / 100, 0);
-          this.storageService.set('pressure',this.pressure);
-          this.pressure$.next(rounded(value / 100, 0));
+          this.storageService.set('pressure', this.pressure);
           return;
         case 'humidity':
           this.humidity = value;
-          this.storageService.set('humidity',this.humidity);
-          this.humidity$.next(value);
+          this.storageService.set('humidity', this.humidity);
           return;
       }
     });
