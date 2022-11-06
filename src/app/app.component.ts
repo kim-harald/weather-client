@@ -22,6 +22,10 @@ export class AppComponent implements OnInit {
   public pressure: number = 0;
   public humidity: number = 0;
 
+  public deltaTemperature:number = 0;
+  public deltaPressure: number = 0;
+  public deltaHumidity: number = 0;
+
   public value = 0;
   constructor(
     private readonly apiService: ApiService,
@@ -95,14 +99,17 @@ export class AppComponent implements OnInit {
       const value = Number(mqttMessage.payload.toString());
       switch (readingType) {
         case 'temperature':
+          this.deltaTemperature = rounded(value - cKelvinOffset, 1) - this.temperature;
           this.temperature = rounded(value - cKelvinOffset, 1);
           this.storageService.set('temperature', this.temperature);
           return;
         case 'pressure':
+          this.deltaPressure = rounded(value / 100, 0) - this.pressure;
           this.pressure = rounded(value / 100, 0);
           this.storageService.set('pressure', this.pressure);
           return;
         case 'humidity':
+          this.deltaHumidity = value - this.humidity;
           this.humidity = value;
           this.storageService.set('humidity', this.humidity);
           return;

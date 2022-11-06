@@ -1,5 +1,4 @@
 import { AfterContentInit, AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { MqttService } from 'ngx-mqtt';
 
 @Component({
   selector: 'app-weather-gauge',
@@ -7,15 +6,15 @@ import { MqttService } from 'ngx-mqtt';
   styleUrls: ['./weather-gauge.component.scss'],
 })
 export class WeatherGaugeComponent implements OnInit, AfterViewInit, AfterContentInit {
-  constructor() { 
-    
+  constructor() {
+
   }
   ngAfterContentInit(): void {
-    
+
   }
   ngAfterViewInit(): void {
     this.ctx = this.canvas.nativeElement.getContext('2d');
-    this.update(this._value);
+    this.update(this._value,0);
   }
 
   @ViewChild('gauge', { static: true })
@@ -38,9 +37,12 @@ export class WeatherGaugeComponent implements OnInit, AfterViewInit, AfterConten
     return this._value;
   }
 
+  @Input()
+  public delta:number = 0;
+
   public set value(v: number) {
     this._value = v;
-    this.update(v);
+    this.update(v, this.delta);
   }
 
   public visibility = 'hidden';
@@ -49,10 +51,10 @@ export class WeatherGaugeComponent implements OnInit, AfterViewInit, AfterConten
   private _value: number = 0;
 
   ngOnInit(): void {
-    
+
   }
 
-  private update(v: number): void {
+  private update(v: number, delta:number): void {
     this.visibility = 'visible'
     setTimeout(() => {
       this.visibility = 'hidden'
@@ -63,10 +65,22 @@ export class WeatherGaugeComponent implements OnInit, AfterViewInit, AfterConten
 
       const endAngle = 180 + ((v - this.min) / (this.max - this.min)) * 180;
 
-      annulus(this.ctx, 115, 120, 20, 100, 180, endAngle, false);
-      this.ctx.strokeStyle = this.color;
-      this.ctx.fillStyle = this.color;
-      this.ctx.stroke();
+      annulus(this.ctx, 115, 120, 20, 100, 180, endAngle, false, this.color);
+      this.ctx.save();
+
+      let angle = 0;
+      let deltaColor = 'green';
+      if (delta > 0) {
+        angle = 0;
+        deltaColor = 'green';
+      } else if(delta === 0) {
+        deltaColor = 'transparent';
+      } else {
+        angle = 180;
+        deltaColor = 'red';
+      }
+
+      triangle(this.ctx, 115,60,20,angle,deltaColor);
     }
   }
 }
@@ -79,7 +93,8 @@ const annulus = (
   radius: number,
   startAngle: number,
   endAngle: number,
-  anticlockwise: boolean
+  anticlockwise: boolean,
+  color:string
 ) => {
   ctx.lineWidth = width; //width;
   let r = width * 0.65;
@@ -88,4 +103,33 @@ const annulus = (
   var th2 = (endAngle * Math.PI) / 180;
 
   ctx.arc(centerX, centerY, radius, th1, th2, anticlockwise);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.stroke();
 };
+
+const triangle = (
+  ctx: CanvasRenderingContext2D,
+  centerX:number,
+  centerY:number,
+  radius:number,
+  angle:number,
+  color:string
+) => {
+  const p1 = [ 0,-radius];
+  const p2 = [radius * Math.cos(Math.PI/6), radius * Math.sin(Math.PI/6)];
+  const p3 = [-radius * Math.cos(Math.PI/6), radius * Math.sin(Math.PI/6)];
+
+  ctx.save();
+  ctx.translate(centerX,centerY);
+  ctx.rotate(angle * (Math.PI/180));
+  
+  ctx.beginPath();
+  ctx.moveTo(p1[0],p1[1]);
+  ctx.lineTo(p2[0],p2[1]);
+  ctx.lineTo(p3[0],p3[1]);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.translate(-centerX,-centerY);
+  ctx.restore();
+}
