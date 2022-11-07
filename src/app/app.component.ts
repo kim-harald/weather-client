@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { MqttService } from 'ngx-mqtt';
-import { map, Subject } from 'rxjs';
+import { map } from 'rxjs';
 import { cKelvinOffset, rounded } from './common/common';
 import { LocationReading } from './models/locationreading';
+import { ReadingDisplay } from './models/ReadingDisplay';
 import { ReadingType } from './models/readingtype';
+import { SummaryReading } from './models/SummaryReading';
 import { ApiService } from './services/api.service';
-import { GlobalService } from './services/global.service';
 import { StorageService } from './services/storage.service';
 
 @Component({
@@ -16,7 +17,10 @@ import { StorageService } from './services/storage.service';
 })
 export class AppComponent implements OnInit {
   public device = 'gimel';
-  public data: ReadingDisplay[] = [];
+  public readings: ReadingDisplay[] = [];
+  public hourlySummaries: SummaryReading[] = [];
+  public dailySummaries: SummaryReading[] = [];
+  
   public rounded = rounded;
 
   public temperature: number = 0;
@@ -58,7 +62,7 @@ export class AppComponent implements OnInit {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 2);
     this.apiService
-      .get('Deck-1', startDate, new Date())
+      .getReadings('Deck-1', startDate, new Date())
       .pipe(
         map((data) => data.sort((a, b) => a.ts - b.ts)),
         map((data) =>
@@ -71,7 +75,7 @@ export class AppComponent implements OnInit {
         )
       )
       .subscribe((data) => {
-        this.data = data; //.filter(o => !this.data.map(m => m.ts).includes(o.ts));
+        this.readings = data;
       });
 
     this.mqttService
@@ -83,18 +87,18 @@ export class AppComponent implements OnInit {
       )
       .subscribe((reading) => {
         if (
-          !this.data.find((f) => rounded(f.ts, -2) === rounded(reading.ts, -2))
+          !this.readings.find((f) => rounded(f.ts, -2) === rounded(reading.ts, -2))
         ) {
-          this.data.push({
+          this.readings.push({
             ...reading,
             when: new Date(reading.ts),
             location: 'Deck-1',
           });
 
-          this.data.sort((a, b) => a.ts - b.ts);
+          this.readings.sort((a, b) => a.ts - b.ts);
           const start = new Date();
           start.setHours(start.getHours() - 2);
-          this.data = this.data.filter((o) => o.ts >= start.valueOf());
+          this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
         }
       });
   }
@@ -126,8 +130,24 @@ export class AppComponent implements OnInit {
       }
     });
   }
+
+  private setupHourlySummaries():void {
+    const startDate = new Date();
+    startDate.setHours(startDate.getHours() - 24);
+    
+    this.apiService.getHourly('Deck-1', startDate,new Date()).subscribe(summaryReadings => {
+      this.hourlySummaries = summaryReadings;
+    });
+  }
+
+  private setDailySummaries():void {
+    const startDate = new Date();
+    startDate.setHours(startDate.getHours() - 24);
+    
+    this.apiService.getDaily('Deck-1', startDate,new Date()).subscribe(summaryReadings => {
+      this.dailySummaries = summaryReadings;
+    });
+  }
 }
 
-type ReadingDisplay = LocationReading & {
-  when: Date;
-};
+
