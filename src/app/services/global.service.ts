@@ -24,7 +24,7 @@ export class GlobalService {
       })
     );
 
-    const http$ = this.apiService.get(location,startDate,new Date())
+    const http$ = this.apiService.getReadings(location,startDate,new Date())
 
     const result$ = merge(http$,mqtt$);
 
