@@ -58,7 +58,7 @@ export class WeatherGaugeComponent implements OnInit, AfterViewInit, AfterConten
     this.visibility = 'visible'
     setTimeout(() => {
       this.visibility = 'hidden'
-    }, 500);
+    }, 2000);
     if (this.ctx) {
       this.ctx.clearRect(1, 1, 230, 120);
       this.ctx.beginPath();

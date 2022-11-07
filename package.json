@@ -3,10 +3,12 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --proxy-config ./proxy.remove.conf.json",
+    "start": "ng serve --proxy-config ./proxy.remote.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "build:hub": "ng build --configuration production",
+    "postbuild:hub": "rm /home/kim/kimharald.no/home/profile/www/weather/* && cp ./dist/. /home/kim/kimharald.no/home/profile/www/weather -r"
   },
   "private": true,
   "dependencies": {
@@ -19,6 +21,7 @@
     "@angular/platform-browser-dynamic": "^14.2.8",
     "@angular/router": "^14.2.8",
     "angular-google-charts": "^2.2.3",
+    "ngx-device-detector": "^4.0.1",
     "ngx-mqtt": "^9.0.5",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",

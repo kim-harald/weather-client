@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DeviceDetectorService } from 'ngx-device-detector';
 import { MqttService } from 'ngx-mqtt';
 import { map, Subject } from 'rxjs';
 import { cKelvinOffset, rounded } from './common/common';
@@ -26,11 +27,14 @@ export class AppComponent implements OnInit {
   public deltaPressure: number = 0;
   public deltaHumidity: number = 0;
 
+  public isMobile:boolean = false;
+
   public value = 0;
   constructor(
     private readonly apiService: ApiService,
     private readonly mqttService: MqttService,
-    private readonly storageService: StorageService
+    private readonly storageService: StorageService,
+    private readonly deviceService: DeviceDetectorService
   ) { }
 
   public ngOnInit(): void {
@@ -40,8 +44,14 @@ export class AppComponent implements OnInit {
     this.pressure = this.storageService.get('pressure');
     this.humidity = this.storageService.get('humidity');
 
-    this.setupReadings();
+    this.isMobile = this.deviceService.isMobile();
+
+    if (!this.isMobile) {
+      this.setupReadings();
+    }
+    
     this.setupReadingListener();
+    
   }
 
   private setupReadings(): void {
