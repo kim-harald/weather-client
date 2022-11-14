@@ -81,3 +81,27 @@ export const normalise = (temperature: number, pressure: number, humidity: numbe
 export const padLeft = (s:string, paddingValue:string) => {
     return String( + s).slice(-paddingValue.length);
 }
+
+export const trendline = (points:{x:number,y:number}[]):{a:number,b:number} => {
+    const n = points.length;
+    let sigmaXY = 0;
+    let sigmaX = 0;
+    let sigmaY = 0;
+    let sigmaX2 = 0;
+    for(let point of points) {
+        sigmaXY += point.x * point.y;
+        sigmaX2 += point.x * point.x;
+        sigmaX += point.x;
+        sigmaY += point.y;
+    }
+
+    if ((sigmaX2-sigmaX*sigmaX) !== 0) {
+        const alpha = (n * sigmaXY - sigmaX * sigmaY) / (n * sigmaX2-sigmaX*sigmaX);
+        const beta = (sigmaY - alpha * sigmaX) / n;
+    
+        return {a:beta, b:alpha};
+    }
+
+    return {a:0,b:0};
+    
+}

@@ -5,7 +5,7 @@
   [max]="40"
   [color]="'rgba(200,50,50,0.4)'"
   [value]="temperature"
-  [delta]="deltaTemperature"
+  [delta]="trendTemperature"
 >
 </app-weather-gauge>
 <app-weather-gauge
@@ -14,7 +14,7 @@
   [max]="1100"
   [color]="'rgba(200,200,0,0.4)'"
   [value]="pressure"
-  [delta]="deltaPressure"
+  [delta]="trendPressure"
 >
 </app-weather-gauge>
 <app-weather-gauge
@@ -23,11 +23,11 @@
   [max]="100"
   [color]="'rgba(50,50,200,0.4)'"
   [value]="humidity"
-  [delta]="deltaHumidity"
+  [delta]="trendHumidity"
 >
 </app-weather-gauge>
 
-<table *ngIf="readings.length > 0">
+<!-- <table *ngIf="readings.length > 0">
   <tr>
     <td>
       {{ rounded(readings[readings.length - 1].temperature - 273.15, 1) }} C
@@ -39,7 +39,7 @@
   <tr>
     <td>{{ readings[readings.length - 1].humidity }} %</td>
   </tr>
-</table>
+</table> -->
 
 <app-weather-chart
   *ngIf="!isMobile"

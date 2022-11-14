@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { MqttService } from 'ngx-mqtt';
 import { map } from 'rxjs';
-import { cKelvinOffset, rounded } from './common/common';
+import { cKelvinOffset, rounded, trendline } from './common/common';
 import { LocationReading } from './models/locationreading';
 import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
@@ -10,13 +10,13 @@ import { SummaryReading } from './models/SummaryReading';
 import { ApiService } from './services/api.service';
 import { StorageService } from './services/storage.service';
 
+const k_LOCATION = 'gimel';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  public device = 'gimel';
   public readings: ReadingDisplay[] = [];
   public hourlySummaries: SummaryReading[] = [];
   public dailySummaries: SummaryReading[] = [];
@@ -27,11 +27,14 @@ export class AppComponent implements OnInit {
   public pressure: number = 0;
   public humidity: number = 0;
 
-  public deltaTemperature: number = 0;
-  public deltaPressure: number = 0;
-  public deltaHumidity: number = 0;
+  public trendTemperature: number = 0;
+  public trendPressure: number = 0;
+  public trendHumidity: number = 0;
 
   public isMobile: boolean = false;
+
+  private _sensorReadings: Record<string, number[]> = {};
+  private ts: number = 0;
 
   public value = 0;
   constructor(
@@ -61,7 +64,7 @@ export class AppComponent implements OnInit {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 2);
     this.apiService
-      .getReadings('Deck-1', startDate, new Date())
+      .getReadings(k_LOCATION, startDate, new Date())
       .pipe(
         map((data) => data.sort((a, b) => a.ts - b.ts)),
         map((data) =>
@@ -75,10 +78,17 @@ export class AppComponent implements OnInit {
       )
       .subscribe((data) => {
         this.readings = data;
+        const lastReading = data[data.length - 1];
+        this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
+        this.pressure = rounded(lastReading.pressure / 100, 0);
+        this.humidity = lastReading.humidity;
+        this.rotate('temperature',this.temperature);
+        this.rotate('pressure', this.pressure);
+        this.rotate('humidity', this.humidity);
       });
 
     this.mqttService
-      .observe('gimel/sensor/all')
+      .observe(`${k_LOCATION}/sensor/all`)
       .pipe(
         map((iqttMessage) => {
           return JSON.parse(iqttMessage.payload.toString()) as LocationReading;
@@ -93,7 +103,7 @@ export class AppComponent implements OnInit {
           this.readings.push({
             ...reading,
             when: new Date(reading.ts),
-            location: 'Deck-1',
+            location: k_LOCATION,
           });
 
           this.readings.sort((a, b) => a.ts - b.ts);
@@ -105,32 +115,57 @@ export class AppComponent implements OnInit {
   }
 
   private setupReadingListener() {
-    this.mqttService.observe('gimel/sensor/#').subscribe((mqttMessage) => {
-      const readingType = mqttMessage.topic.replace(
-        'gimel/sensor/',
-        ''
-      ) as ReadingType;
-      const value = Number(mqttMessage.payload.toString());
-      const value5Min = this.readings[this.readings.length - 1];
-      switch (readingType) {
-        case 'temperature':
-          this.deltaTemperature = rounded(
-            this.temperature - (value5Min.temperature - cKelvinOffset), 1);
-          this.temperature = rounded(value - cKelvinOffset, 1);
-          this.storageService.set('temperature', this.temperature);
-          return;
-        case 'pressure':
-          this.deltaPressure = this.pressure - rounded(value5Min.pressure / 100, 0);
-          this.pressure = rounded(value / 100, 0);
-          this.storageService.set('pressure', this.pressure);
-          return;
-        case 'humidity':
-          this.deltaHumidity = this.humidity - value5Min.humidity;
-          this.humidity = value;
-          this.storageService.set('humidity', this.humidity);
-          return;
-      }
-    });
+    this.mqttService
+      .observe(`${k_LOCATION}/sensor/#`)
+      .subscribe((mqttMessage) => {
+        const readingType = mqttMessage.topic.replace(
+          `${k_LOCATION}/sensor/`,
+          ''
+        ) as ReadingType;
+        const value = Number(mqttMessage.payload.toString());
+        const value5Min = this.readings[this.readings.length - 1];
+
+        switch (readingType) {
+          case 'temperature':
+            this.rotate('temperature', rounded(value - cKelvinOffset, 1));
+            this.trendTemperature = rounded(
+              trendline(
+                this._sensorReadings['temperature'].map((o,index) => {
+                  return { x: index, y: o };
+                })
+              ).b,
+              1
+            );
+            this.temperature = rounded(value - cKelvinOffset, 1);
+            this.storageService.set('temperature', this.temperature);
+            return;
+          case 'pressure':
+            this.rotate('pressure', rounded(value / 100, 0));
+            this.trendPressure = rounded(
+              trendline(
+                this._sensorReadings['pressure'].map((o,index) => {
+                  return { x: index, y: o };
+                })
+              ).b,
+              0
+            );
+            this.storageService.set('pressure', this.pressure);
+            return;
+          case 'humidity':
+            this.rotate('humidity', value);
+            this.trendHumidity = rounded(
+              trendline(
+                this._sensorReadings['humidity'].map((o,index) => {
+                  return { x: index, y: o };
+                })
+              ).b,
+              0
+            );
+            this.humidity = value;
+            this.storageService.set('humidity', this.humidity);
+            return;
+        }
+      });
   }
 
   private setupHourlySummaries(): void {
@@ -138,7 +173,7 @@ export class AppComponent implements OnInit {
     startDate.setHours(startDate.getHours() - 24);
 
     this.apiService
-      .getHourly('Deck-1', startDate, new Date())
+      .getHourly(k_LOCATION, startDate, new Date())
       .subscribe((summaryReadings) => {
         this.hourlySummaries = summaryReadings;
       });
@@ -149,9 +184,20 @@ export class AppComponent implements OnInit {
     startDate.setHours(startDate.getHours() - 24);
 
     this.apiService
-      .getDaily('Deck-1', startDate, new Date())
+      .getDaily(k_LOCATION, startDate, new Date())
       .subscribe((summaryReadings) => {
         this.dailySummaries = summaryReadings;
       });
+  }
+
+  private rotate(type: string, value: number, limit: number = 30): void {
+    if (!this._sensorReadings[type]) {
+      this._sensorReadings[type] = [];
+    }
+
+    this._sensorReadings[type].push(value);
+    if (this._sensorReadings[type].length > limit) {
+      this._sensorReadings[type].splice(0, 1);
+    }
   }
 }
