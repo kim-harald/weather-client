@@ -10,13 +10,13 @@ app-weather-gauge {
     display: inline-block;   
 }
 
+app-weather-gauge:hover {
+    cursor: pointer;
+}
+
 app-battery {
     position: fixed;
     top:1em;
     right:1em;
     z-index: 10;
-}
-
-table {
-    color:aliceblue;
 }
