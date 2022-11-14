@@ -1,12 +1,9 @@
 export const environment = {
-  production: true,
-  hmr: false,
-	http: {
-		apiUrl: '',
-	},
-	mqtt: {
-		server: 'alef',
-		protocol: "wss",
-		port: 9801
-	}
-};
+	production: false,
+	hmr: false,
+	  mqtt: {
+		  server: 'kimharald.no',
+		  protocol: "wss",
+		  port: 8083
+	  }
+  };

@@ -12,5 +12,4 @@ export class RemoveCommaPipe implements PipeTransform {
       return "";
     }
   }
-
 }

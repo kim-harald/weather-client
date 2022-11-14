@@ -1,1 +1,48 @@
-<app-battery device = "gimel"></app-battery>
+<app-battery device="gimel"></app-battery>
+<app-weather-gauge
+  [units]="'C'"
+  [min]="-40"
+  [max]="40"
+  [color]="'rgba(200,50,50,0.4)'"
+  [value]="temperature"
+  [delta]="trendTemperature"
+>
+</app-weather-gauge>
+<app-weather-gauge
+  [units]="'hPa'"
+  [min]="800"
+  [max]="1100"
+  [color]="'rgba(200,200,0,0.4)'"
+  [value]="pressure"
+  [delta]="trendPressure"
+>
+</app-weather-gauge>
+<app-weather-gauge
+  [units]="'%'"
+  [min]="0"
+  [max]="100"
+  [color]="'rgba(50,50,200,0.4)'"
+  [value]="humidity"
+  [delta]="trendHumidity"
+>
+</app-weather-gauge>
+
+<!-- <table *ngIf="readings.length > 0">
+  <tr>
+    <td>
+      {{ rounded(readings[readings.length - 1].temperature - 273.15, 1) }} C
+    </td>
+  </tr>
+  <tr>
+    <td>{{ rounded(readings[readings.length - 1].pressure / 100, 0) }} hPa</td>
+  </tr>
+  <tr>
+    <td>{{ readings[readings.length - 1].humidity }} %</td>
+  </tr>
+</table> -->
+
+<app-weather-chart
+  *ngIf="!isMobile"
+  title=""
+  [data]="readings"
+></app-weather-chart>

@@ -91,8 +91,8 @@ export class BatteryComponent implements OnInit, OnDestroy {
   private setWatchdog():void {
     setInterval(()=> {
       const t = this._status.ts - new Date().valueOf() + 20000;
-      console.info(`ts:${this._status.ts},t:${t}`);
-      console.info(`x:${this._mqttStatus}`);
+      // console.info(`ts:${this._status.ts},t:${t}`);
+      // console.info(`x:${this._mqttStatus}`);
       if (t < 0) {
         this._watchdog -= 1;
       } else {

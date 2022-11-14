@@ -1,0 +1,46 @@
+canvas {
+  display: block;
+  background-color: transparent;
+  position: relative;
+  padding: 0.3em;
+}
+
+.container {
+  display: block;
+  position: relative;
+  padding:0.5em;
+}
+
+.text-container {
+  position: absolute;
+  width: 230px;
+  bottom:0.5em;
+  text-align: center;
+  color: antiquewhite;
+}
+
+span {
+  z-index: 1;
+  font-size: 30px;
+}
+
+.spot {
+  border:10px solid rgba(0,200,50,0.7);
+  border-radius: 10px;
+  width:1px;
+  position: absolute;
+  left:1em;
+  top:1em;
+}
+
+.visible {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 2s linear;
+}
+
+.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 2s, opacity 2s linear;
+}
