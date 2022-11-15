@@ -7,6 +7,7 @@ import { LocationReading } from './models/locationreading';
 import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/SummaryReading';
+import { WeatherStats } from './models/WeatherStats.1';
 import { ApiService } from './services/api.service';
 import { StorageService } from './services/storage.service';
 
@@ -20,6 +21,7 @@ export class AppComponent implements OnInit {
   public readings: ReadingDisplay[] = [];
   public hourlySummaries: SummaryReading[] = [];
   public dailySummaries: SummaryReading[] = [];
+  public stats:WeatherStats = {} as WeatherStats;
 
   public rounded = rounded;
 
@@ -166,7 +168,7 @@ export class AppComponent implements OnInit {
       });
   }
 
-  private setupHourlySummaries(): void {
+  private getHourlySummaries(): void {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 24);
 
@@ -177,7 +179,7 @@ export class AppComponent implements OnInit {
       });
   }
 
-  private setDailySummaries(): void {
+  private getDailySummaries(): void {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 24);
 
@@ -186,6 +188,10 @@ export class AppComponent implements OnInit {
       .subscribe((summaryReadings) => {
         this.dailySummaries = summaryReadings;
       });
+  }
+
+  private getStats(type:string):void {
+    this.apiService.getStats(k_LOCATION,)
   }
 
   private rotate(type: string, value: number, limit: number = 30): void {
