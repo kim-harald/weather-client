@@ -123,7 +123,6 @@ export class AppComponent implements OnInit {
           ''
         ) as ReadingType;
         const value = Number(mqttMessage.payload.toString());
-        const value5Min = this.readings[this.readings.length - 1];
 
         switch (readingType) {
           case 'temperature':
@@ -134,7 +133,7 @@ export class AppComponent implements OnInit {
                   return { x: index, y: o };
                 })
               ).b,
-              1
+              3
             );
             this.temperature = rounded(value - cKelvinOffset, 1);
             this.storageService.set('temperature', this.temperature);
@@ -147,8 +146,7 @@ export class AppComponent implements OnInit {
                   return { x: index, y: o };
                 })
               ).b,
-              0
-            );
+              3            );
             this.storageService.set('pressure', this.pressure);
             return;
           case 'humidity':
@@ -159,7 +157,7 @@ export class AppComponent implements OnInit {
                   return { x: index, y: o };
                 })
               ).b,
-              0
+              3
             );
             this.humidity = value;
             this.storageService.set('humidity', this.humidity);
