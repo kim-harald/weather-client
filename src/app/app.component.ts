@@ -4,6 +4,7 @@ import { MqttService } from 'ngx-mqtt';
 import { map } from 'rxjs';
 import { cKelvinOffset, rounded, trendline } from './common/common';
 import { LocationReading } from './models/locationreading';
+import { Reading } from './models/reading';
 import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/SummaryReading';
@@ -12,6 +13,7 @@ import { ApiService } from './services/api.service';
 import { StorageService } from './services/storage.service';
 
 const k_LOCATION = 'gimel';
+const k_Samples = 720;
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -21,7 +23,7 @@ export class AppComponent implements OnInit {
   public readings: ReadingDisplay[] = [];
   public hourlySummaries: SummaryReading[] = [];
   public dailySummaries: SummaryReading[] = [];
-  public stats:WeatherStats = {} as WeatherStats;
+  public stats: WeatherStats = {} as WeatherStats;
 
   public rounded = rounded;
 
@@ -84,7 +86,7 @@ export class AppComponent implements OnInit {
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
         this.pressure = rounded(lastReading.pressure / 100, 0);
         this.humidity = lastReading.humidity;
-        this.rotate('temperature',this.temperature);
+        this.rotate('temperature', this.temperature);
         this.rotate('pressure', this.pressure);
         this.rotate('humidity', this.humidity);
       });
@@ -128,10 +130,14 @@ export class AppComponent implements OnInit {
 
         switch (readingType) {
           case 'temperature':
-            this.rotate('temperature', rounded(value - cKelvinOffset, 1));
+            this.rotate(
+              'temperature',
+              rounded(value - cKelvinOffset, 1),
+              k_Samples
+            );
             this.trendTemperature = rounded(
               trendline(
-                this._sensorReadings['temperature'].map((o,index) => {
+                this._sensorReadings['temperature'].map((o, index) => {
                   return { x: index, y: o };
                 })
               ).b,
@@ -141,21 +147,22 @@ export class AppComponent implements OnInit {
             this.storageService.set('temperature', this.temperature);
             return;
           case 'pressure':
-            this.rotate('pressure', rounded(value / 100, 0));
+            this.rotate('pressure', rounded(value / 100, 0), k_Samples);
             this.trendPressure = rounded(
               trendline(
-                this._sensorReadings['pressure'].map((o,index) => {
+                this._sensorReadings['pressure'].map((o, index) => {
                   return { x: index, y: o };
                 })
               ).b,
-              3            );
+              3
+            );
             this.storageService.set('pressure', this.pressure);
             return;
           case 'humidity':
-            this.rotate('humidity', value);
+            this.rotate('humidity', value, k_Samples);
             this.trendHumidity = rounded(
               trendline(
-                this._sensorReadings['humidity'].map((o,index) => {
+                this._sensorReadings['humidity'].map((o, index) => {
                   return { x: index, y: o };
                 })
               ).b,
@@ -190,8 +197,8 @@ export class AppComponent implements OnInit {
       });
   }
 
-  private getStats(type:string):void {
-    this.apiService.getStats(k_LOCATION,)
+  private getStats(type: string): void {
+    this.apiService.getStats(k_LOCATION);
   }
 
   private rotate(type: string, value: number, limit: number = 30): void {
@@ -204,4 +211,18 @@ export class AppComponent implements OnInit {
       this._sensorReadings[type].splice(0, 1);
     }
   }
+
+  
+}
+
+const buildSamples = (readings:Reading[], n:number):Record<string,number[]> =>{
+    const result: Record<string,number[]> = {};
+    result['temperature'] = [];
+    result['pressure'] = [];
+    result['humidity'] = [];
+    
+    readings.forEach(reading => {
+      result['temperature'] = [];
+    
+    });
 }
