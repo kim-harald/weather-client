@@ -31,4 +31,10 @@ export class ApiService {
     const url = `https://kimharald.com/api/weather/summary/daily/${location}/${fromDate.valueOf()}/${toDate.valueOf()}`;
     return this.http.get<SummaryReading[]>(url);
   }
+  
+  public getStats(location:string, fromDate:Date, toDate:Date): Observable<SummaryReading[]> {
+    const url = `https://kimharald.com/api/weather/summary/daily/${location}/${fromDate.valueOf()}/${toDate.valueOf()}`;
+    return this.http.get<SummaryReading[]>(url);
+  }
+  
 }
