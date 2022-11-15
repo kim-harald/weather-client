@@ -86,9 +86,7 @@ export class AppComponent implements OnInit {
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
         this.pressure = rounded(lastReading.pressure / 100, 0);
         this.humidity = lastReading.humidity;
-        this.rotate('temperature', this.temperature);
-        this.rotate('pressure', this.pressure);
-        this.rotate('humidity', this.humidity);
+        this._sensorReadings = buildSamples(data,k_Samples);
       });
 
     this.mqttService
@@ -198,7 +196,7 @@ export class AppComponent implements OnInit {
   }
 
   private getStats(type: string): void {
-    this.apiService.getStats(k_LOCATION);
+    // this.apiService.getStats(k_LOCATION);
   }
 
   private rotate(type: string, value: number, limit: number = 30): void {
@@ -211,8 +209,6 @@ export class AppComponent implements OnInit {
       this._sensorReadings[type].splice(0, 1);
     }
   }
-
-  
 }
 
 const buildSamples = (readings:Reading[], n:number):Record<string,number[]> =>{
@@ -220,9 +216,15 @@ const buildSamples = (readings:Reading[], n:number):Record<string,number[]> =>{
     result['temperature'] = [];
     result['pressure'] = [];
     result['humidity'] = [];
-    
+    const samples = rounded(n / readings.length,0); 
+
     readings.forEach(reading => {
-      result['temperature'] = [];
-    
+      for (let i = 0; i < samples; i++) {
+        result['temperature'].push(reading.temperature);
+        result['pressure'].push(reading.pressure);
+        result['humidity'].push(reading.humidity);
+      }
     });
+
+    return result;
 }
