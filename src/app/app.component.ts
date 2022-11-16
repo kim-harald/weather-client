@@ -37,8 +37,12 @@ export class AppComponent implements OnInit {
 
   public isMobile: boolean = false;
 
+  public get sensorReadings(): Record<string, number[]> {
+    return this._sensorReadings
+  }
+
   private _sensorReadings: Record<string, number[]> = {};
-  private ts: number = 0;
+
 
   public value = 0;
   constructor(
@@ -46,7 +50,7 @@ export class AppComponent implements OnInit {
     private readonly mqttService: MqttService,
     private readonly storageService: StorageService,
     private readonly deviceService: DeviceDetectorService
-  ) {}
+  ) { }
 
   public ngOnInit(): void {
     const t = this.storageService.get('temperature');
@@ -86,7 +90,7 @@ export class AppComponent implements OnInit {
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
         this.pressure = rounded(lastReading.pressure / 100, 0);
         this.humidity = lastReading.humidity;
-        this._sensorReadings = buildSamples(data,k_Samples);
+        this._sensorReadings = buildSamples(data, k_Samples);
       });
 
     this.mqttService
@@ -128,11 +132,11 @@ export class AppComponent implements OnInit {
 
         switch (readingType) {
           case 'temperature':
-            this.rotate(
-              'temperature',
-              rounded(value - cKelvinOffset, 1),
+            this._sensorReadings['temperature'] = rotate(this._sensorReadings['temperature'],
+              value,
               k_Samples
             );
+            this.trendTemperature = 0;
             this.trendTemperature = rounded(
               trendline(
                 this._sensorReadings['temperature'].map((o, index) => {
@@ -145,7 +149,10 @@ export class AppComponent implements OnInit {
             this.storageService.set('temperature', this.temperature);
             return;
           case 'pressure':
-            this.rotate('pressure', rounded(value / 100, 0), k_Samples);
+            this._sensorReadings['pressure'] = rotate(this._sensorReadings['pressure'],
+              value, k_Samples
+            );
+            this.trendPressure = 0;
             this.trendPressure = rounded(
               trendline(
                 this._sensorReadings['pressure'].map((o, index) => {
@@ -157,7 +164,10 @@ export class AppComponent implements OnInit {
             this.storageService.set('pressure', this.pressure);
             return;
           case 'humidity':
-            this.rotate('humidity', value, k_Samples);
+            this._sensorReadings['humidity'] = rotate(this._sensorReadings['humidity'],
+              value, k_Samples
+            );
+            this.trendHumidity = 0;
             this.trendHumidity = rounded(
               trendline(
                 this._sensorReadings['humidity'].map((o, index) => {
@@ -199,32 +209,31 @@ export class AppComponent implements OnInit {
     // this.apiService.getStats(k_LOCATION);
   }
 
-  private rotate(type: string, value: number, limit: number = 30): void {
-    if (!this._sensorReadings[type]) {
-      this._sensorReadings[type] = [];
-    }
-
-    this._sensorReadings[type].push(value);
-    if (this._sensorReadings[type].length > limit) {
-      this._sensorReadings[type].splice(0, 1);
-    }
-  }
 }
 
-const buildSamples = (readings:Reading[], n:number):Record<string,number[]> =>{
-    const result: Record<string,number[]> = {};
-    result['temperature'] = [];
-    result['pressure'] = [];
-    result['humidity'] = [];
-    const samples = rounded(n / readings.length,0); 
+const rotate = (values: number[], value: number, limit: number = 30): number[] => {
+  values.push(value);
+  if (values.length > limit) {
+    values.splice(0, 1);
+  }
 
-    readings.forEach(reading => {
-      for (let i = 0; i < samples; i++) {
-        result['temperature'].push(reading.temperature);
-        result['pressure'].push(reading.pressure);
-        result['humidity'].push(reading.humidity);
-      }
-    });
+  return values;
+}
 
-    return result;
+const buildSamples = (readings: Reading[], n: number): Record<string, number[]> => {
+  const result: Record<string, number[]> = {};
+  result['temperature'] = [];
+  result['pressure'] = [];
+  result['humidity'] = [];
+  const samples = rounded(n / readings.length, 0);
+
+  readings.forEach(reading => {
+    for (let i = 0; i < samples; i++) {
+      result['temperature'] = rotate(result['temperature'], reading.temperature, k_Samples);
+      result['pressure'] = rotate(result['pressure'], reading.pressure, k_Samples);
+      result['humidity'] = rotate(result['humidity'], reading.humidity, k_Samples);
+    }
+  });
+
+  return result;
 }

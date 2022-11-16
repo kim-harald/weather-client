@@ -14,10 +14,9 @@ import {
   styleUrls: ['./weather-gauge.component.scss'],
 })
 export class WeatherGaugeComponent
-  implements OnInit, AfterViewInit, AfterContentInit
-{
-  constructor() {}
-  ngAfterContentInit(): void {}
+  implements OnInit, AfterViewInit, AfterContentInit {
+  constructor() { }
+  ngAfterContentInit(): void { }
   ngAfterViewInit(): void {
     this.ctx = this.canvas.nativeElement.getContext('2d');
     this.update(this._value);
@@ -56,6 +55,7 @@ export class WeatherGaugeComponent
   public set value(v: number) {
     this._value = v;
     this.update(v);
+    this.updateDelta(this._delta);
   }
 
   public visibility = 'hidden';
@@ -64,7 +64,7 @@ export class WeatherGaugeComponent
   private _value: number = 0;
   private _delta: number = 0;
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   private update(v: number): void {
     if (this.ctx) {
@@ -84,6 +84,7 @@ export class WeatherGaugeComponent
   }
 
   private updateDelta(delta: number): void {
+    let isFlip = false;
     if (this.ctx) {
       let angle = 0;
       let deltaColor = 'green';
@@ -93,11 +94,12 @@ export class WeatherGaugeComponent
       } else if (delta === 0) {
         deltaColor = 'transparent';
       } else {
-        angle = 180;
+        angle = 0;
+        isFlip = true;
         deltaColor = 'red';
       }
 
-      triangle(this.ctx, 115, 60, 20, angle, deltaColor);
+      triangle(this.ctx, 115, 60, 20, angle, deltaColor,isFlip);
     }
   }
 }
@@ -131,7 +133,8 @@ const triangle = (
   centerY: number,
   radius: number,
   angle: number,
-  color: string
+  color: string,
+  isFlip: boolean = false
 ) => {
   const p1 = [0, -radius];
   const p2 = [radius * Math.cos(Math.PI / 6), radius * Math.sin(Math.PI / 6)];
@@ -139,6 +142,11 @@ const triangle = (
 
   ctx.save();
   ctx.translate(centerX, centerY);
+  
+  if (isFlip) {
+    ctx.scale(1, -1);
+  }
+
   ctx.rotate(angle * (Math.PI / 180));
 
   ctx.beginPath();
@@ -150,3 +158,4 @@ const triangle = (
   ctx.translate(-centerX, -centerY);
   ctx.restore();
 };
+

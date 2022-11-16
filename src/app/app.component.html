@@ -26,23 +26,15 @@
   [delta]="trendHumidity"
 >
 </app-weather-gauge>
-
-<!-- <table *ngIf="readings.length > 0">
+<!-- <table *ngIf="sensorReadings['temperature']">
   <tr>
-    <td>
-      {{ rounded(readings[readings.length - 1].temperature - 273.15, 1) }} C
-    </td>
-  </tr>
-  <tr>
-    <td>{{ rounded(readings[readings.length - 1].pressure / 100, 0) }} hPa</td>
-  </tr>
-  <tr>
-    <td>{{ readings[readings.length - 1].humidity }} %</td>
+    <td style="color:red">{{sensorReadings["temperature"].length}}</td>
+    <td style="color:yellow">{{sensorReadings["pressure"].length}}</td>
+    <td style="color:blue">{{sensorReadings["humidity"].length}}</td>
   </tr>
 </table> -->
 
-<app-weather-chart
-  *ngIf="!isMobile"
+<app-weather-chart *ngIf="!isMobile"
   title=""
   [data]="readings"
 ></app-weather-chart>
