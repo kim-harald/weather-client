@@ -10,7 +10,6 @@ import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/SummaryReading';
 import { WeatherStats } from './models/WeatherStats.1';
 import { ApiService } from './services/api.service';
-import { StorageService } from './services/storage.service';
 
 const k_LOCATION = 'gimel';
 const k_Samples = 720;
@@ -48,23 +47,12 @@ export class AppComponent implements OnInit {
   constructor(
     private readonly apiService: ApiService,
     private readonly mqttService: MqttService,
-    private readonly storageService: StorageService,
     private readonly deviceService: DeviceDetectorService
   ) { }
 
   public ngOnInit(): void {
-    const t = this.storageService.get('temperature');
-
-    this.temperature = this.storageService.get('temperature');
-    this.pressure = this.storageService.get('pressure');
-    this.humidity = this.storageService.get('humidity');
-
     this.isMobile = this.deviceService.isMobile();
-
-    if (!this.isMobile) {
-      this.setupReadings();
-    }
-
+    this.setupReadings();
     this.setupReadingListener();
   }
 
@@ -146,7 +134,6 @@ export class AppComponent implements OnInit {
               3
             );
             this.temperature = rounded(value - cKelvinOffset, 1);
-            this.storageService.set('temperature', this.temperature);
             return;
           case 'pressure':
             this._sensorReadings['pressure'] = rotate(this._sensorReadings['pressure'],
@@ -161,7 +148,6 @@ export class AppComponent implements OnInit {
               ).b,
               3
             );
-            this.storageService.set('pressure', this.pressure);
             return;
           case 'humidity':
             this._sensorReadings['humidity'] = rotate(this._sensorReadings['humidity'],
@@ -177,7 +163,6 @@ export class AppComponent implements OnInit {
               3
             );
             this.humidity = value;
-            this.storageService.set('humidity', this.humidity);
             return;
         }
       });
@@ -208,7 +193,6 @@ export class AppComponent implements OnInit {
   private getStats(type: string): void {
     // this.apiService.getStats(k_LOCATION);
   }
-
 }
 
 const rotate = (values: number[], value: number, limit: number = 30): number[] => {

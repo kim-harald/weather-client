@@ -7,6 +7,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import { delay } from 'src/app/common/common';
 
 @Component({
   selector: 'app-weather-gauge',
@@ -14,12 +15,14 @@ import {
   styleUrls: ['./weather-gauge.component.scss'],
 })
 export class WeatherGaugeComponent
-  implements OnInit, AfterViewInit, AfterContentInit {
-  constructor() { }
-  ngAfterContentInit(): void { }
+  implements OnInit, AfterViewInit, AfterContentInit
+{
+  constructor() {}
+  ngAfterContentInit(): void {}
   ngAfterViewInit(): void {
     this.ctx = this.canvas.nativeElement.getContext('2d');
     this.update(this._value);
+    this.updateDelta(this._delta);
   }
 
   @ViewChild('gauge', { static: true })
@@ -64,14 +67,14 @@ export class WeatherGaugeComponent
   private _value: number = 0;
   private _delta: number = 0;
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
-  private update(v: number): void {
+  private update(value: number): void {
     if (this.ctx) {
       this.ctx.clearRect(1, 1, 230, 120);
       this.ctx.beginPath();
 
-      const endAngle = 180 + ((v - this.min) / (this.max - this.min)) * 180;
+      const endAngle = 180 + ((value - this.min) / (this.max - this.min)) * 180;
 
       annulus(this.ctx, 115, 120, 20, 100, 180, endAngle, false, this.color);
       this.ctx.save();
@@ -98,8 +101,8 @@ export class WeatherGaugeComponent
         isFlip = true;
         deltaColor = 'red';
       }
-
-      triangle(this.ctx, 115, 60, 20, angle, deltaColor,isFlip);
+      this.ctx.clearRect(95, 40, 40, 40);
+      triangle(this.ctx, 115, 60, 20, angle, deltaColor, isFlip);
     }
   }
 }
@@ -142,7 +145,7 @@ const triangle = (
 
   ctx.save();
   ctx.translate(centerX, centerY);
-  
+
   if (isFlip) {
     ctx.scale(1, -1);
   }
@@ -159,3 +162,35 @@ const triangle = (
   ctx.restore();
 };
 
+const isoTriangle = (
+  ctx: CanvasRenderingContext2D,
+  apexX: number,
+  apexY: number,
+  height: number,
+  length: number,
+  color: string,
+  isFlip: boolean = false
+) => {
+  const points = [
+    { x: apexX, y: apexY },
+    { x: apexX + length / 2, y: apexY + height },
+    { x: apexX - length / 2, y: apexY + height },
+  ];
+
+  ctx.save();
+  ctx.translate(apexX, apexY);
+
+  if (isFlip) {
+    ctx.scale(1, -1);
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  ctx.lineTo(points[1].x, points[1].y);
+  ctx.lineTo(points[2].x, points[2].y);
+
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  ctx.translate(apexX, apexY);
+};
