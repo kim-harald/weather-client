@@ -6,6 +6,7 @@
   [color]="'rgba(200,50,50,0.4)'"
   [value]="temperature"
   [delta]="trendTemperature"
+  (click)="handleClick('temperature')"
 >
 </app-weather-gauge>
 <app-weather-gauge
@@ -15,6 +16,7 @@
   [color]="'rgba(200,200,0,0.4)'"
   [value]="pressure"
   [delta]="trendPressure"
+  (click)="handleClick('pressure')"
 >
 </app-weather-gauge>
 <app-weather-gauge
@@ -24,17 +26,38 @@
   [color]="'rgba(50,50,200,0.4)'"
   [value]="humidity"
   [delta]="trendHumidity"
+  (click)="handleClick('humidity')"
 >
 </app-weather-gauge>
-<!-- <table *ngIf="sensorReadings['temperature']">
-  <tr>
-    <td style="color:red">{{sensorReadings["temperature"].length}}</td>
-    <td style="color:yellow">{{sensorReadings["pressure"].length}}</td>
-    <td style="color:blue">{{sensorReadings["humidity"].length}}</td>
-  </tr>
-</table> -->
 
-<app-weather-chart *ngIf="!isMobile"
-  title=""
-  [data]="readings"
-></app-weather-chart>
+<div *ngIf="isReady" class="chart-container">
+  <app-weather-chart
+    [class]="mode === 'temperature' ? 'visible' : 'hidden'"
+    title=""
+    [data]="DataRows['temperature']"
+    [max]="chartOptions['temperature'].max"
+    [min]="chartOptions['temperature'].min"
+    [colors]="chartOptions['temperature'].colors"
+    [columns]="chartOptions['temperature'].columns"
+  ></app-weather-chart>
+
+  <app-weather-chart
+    title=""
+    [class]="mode === 'pressure' ? 'visible' : 'hidden'"
+    [data]="DataRows['pressure']"
+    [max]="chartOptions['pressure'].max"
+    [min]="chartOptions['pressure'].min"
+    [colors]="chartOptions['pressure'].colors"
+    [columns]="chartOptions['pressure'].columns"
+  ></app-weather-chart>
+
+  <app-weather-chart
+    title=""
+    [class]="mode === 'humidity' ? 'visible' : 'hidden'"
+    [data]="DataRows['humidity']"
+    [max]="chartOptions['humidity'].max"
+    [min]="chartOptions['humidity'].min"
+    [colors]="chartOptions['humidity'].colors"
+    [columns]="chartOptions['humidity'].columns"
+  ></app-weather-chart>
+</div>

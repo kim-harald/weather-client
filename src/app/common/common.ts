@@ -1,4 +1,5 @@
 import { Reading } from "../models/reading";
+import  './string.extensions';
 
 export const cKelvinOffset = 273.15;
 
@@ -102,6 +103,13 @@ export const trendline = (points:{x:number,y:number}[]):{a:number,b:number} => {
         return {a:beta, b:alpha};
     }
 
-    return {a:0,b:0};
-    
+    return {a:0,b:0};   
 }
+
+export const convertTime = (ts: number): string => {
+    const d = new Date(ts);
+    const hh = d.getHours().toString().padStart(2, '0');
+    const mm = d.getMinutes().toString().padStart(2, '0');
+    return hh + ':' + mm;
+  };
+  
