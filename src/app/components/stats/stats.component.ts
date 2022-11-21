@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { WeatherStats } from 'src/app/models/WeatherStats.1';
+import { SummaryReading } from 'src/app/models/stats/SummaryReading';
 
 @Component({
   selector: 'app-stats',
@@ -8,17 +8,33 @@ import { WeatherStats } from 'src/app/models/WeatherStats.1';
 })
 export class StatsComponent implements OnInit {
 
-  @Input()
-  public stats:WeatherStats
+  private _stats: SummaryReading = {} as SummaryReading;
 
   @Input()
-  public mode:string = 'temperature';
+  public set stats(v: SummaryReading) {
+    this._stats = v;
+    if (this._stats && this._stats.first && this._stats.last) {
+      this.title = new Date(this._stats.first).toJSON().slice(0, 19).replace('T',' ') 
+      + ' til ' 
+      + new Date(this._stats.last).toJSON().slice(0,19).replace('T',' ');
+    }
+  }
 
-  constructor() { 
-    this.stats = {} as WeatherStats;
+  public get stats(): SummaryReading {
+    return this._stats;
+  }
+
+  @Input()
+  public mode: string = 'temperature';
+
+  public title: string = '';
+
+  constructor() {
+    this.stats = {} as SummaryReading;
   }
 
   ngOnInit(): void {
+
   }
 
 }

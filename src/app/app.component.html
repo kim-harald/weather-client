@@ -30,6 +30,8 @@
 >
 </app-weather-gauge>
 
+<app-stats [mode]="mode" [stats]="allSummary"></app-stats>
+
 <div *ngIf="isReady" class="chart-container">
   <app-weather-chart
     [class]="mode === 'temperature' ? 'visible' : 'hidden'"

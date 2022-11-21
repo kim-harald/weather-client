@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient} from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { LocationReading } from '../models/locationreading';
-import { SummaryReading } from '../models/SummaryReading';
+import { SummaryReading } from '../models/stats/SummaryReading';
 
 @Injectable({
   providedIn: 'root'
@@ -32,9 +32,9 @@ export class ApiService {
     return this.http.get<SummaryReading[]>(url);
   }
   
-  public getStats(location:string, fromDate:Date, toDate:Date): Observable<SummaryReading[]> {
-    const url = `https://kimharald.com/api/weather/summary/daily/${location}/${fromDate.valueOf()}/${toDate.valueOf()}`;
-    return this.http.get<SummaryReading[]>(url);
+  public getSummary(location:string): Observable<SummaryReading> {
+    const url = `https://kimharald.com/api/weather/summary/all/${location}`;
+    return this.http.get<SummaryReading>(url);
   }
   
 }

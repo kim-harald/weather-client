@@ -1,51 +1,47 @@
-<table *ngIf="mode=='temperature'">
-    <tr>
-        <td>Temperature</td>
-    </tr>
-    <tr>
-        <td>Min</td>
-        <td>{{stats.temperature.min.temperature}}</td>
-    </tr>
-    <tr>
-        <td>Max</td>
-        <td>{{stats.temperature.max.temperature}}</td>
-    </tr>
-    <tr>
-        <td>Average</td>
-        <td>{{stats.temperature.mean}}</td>
-    </tr>
-</table>
-<table *ngIf="mode=='pressure'">
-    <tr>
-        <td>Pressure</td>
-    </tr>
-    <tr>
-        <td>Min</td>
-        <td>{{stats.pressure.min.pressure}}</td>
-    </tr>
-    <tr>
-        <td>Max</td>
-        <td>{{stats.pressure.max.pressure}}</td>
-    </tr>
-    <tr>
-        <td>Average</td>
-        <td>{{stats.pressure.mean}}</td>
-    </tr>
-</table>
-<table *ngIf="mode=='humidity'">
-    <tr>
-        <td>Humidity</td>
-    </tr>
-    <tr>
-        <td>Min</td>
-        <td>{{stats.humidity.min.humidity}}</td>
-    </tr>
-    <tr>
-        <td>Max</td>
-        <td>{{stats.humidity.max.humidity}}</td>
-    </tr>
-    <tr>
-        <td>Average</td>
-        <td>{{stats.humidity.mean}}</td>
-    </tr>
-</table>
+<div class="container" *ngIf="stats">
+    <table [class]="mode=='temperature' ? 'visible':'hidden'" *ngIf="stats.temperature">
+        <caption>{{title}}</caption>
+        <tr>
+            <td>Min</td>
+            <td>{{stats.temperature.min}} C</td>
+        </tr>
+        <tr>
+            <td>Max</td>
+            <td>{{stats.temperature.max}} C</td>
+        </tr>
+        <tr>
+            <td>Average</td>
+            <td>{{stats.temperature.mean}} C</td>
+        </tr>
+    </table>
+    <table [class]="mode=='pressure' ? 'visible':'hidden'" *ngIf="stats.pressure">
+        <caption>{{title}}</caption>
+        <tr>
+            <td>Min</td>
+            <td>{{stats.pressure.min}} hPa</td>
+        </tr>
+        <tr>
+            <td>Max</td>
+            <td>{{stats.pressure.max}} hPa</td>
+        </tr>
+        <tr>
+            <td>Average</td>
+            <td>{{stats.pressure.mean}} hPa</td>
+        </tr>
+    </table>
+    <table [class]="mode=='humidity' ? 'visible':'hidden'" *ngIf="stats.humidity">
+        <caption>{{title}}</caption>
+        <tr>
+            <td>Min</td>
+            <td>{{stats.humidity.min}}%</td>
+        </tr>
+        <tr>
+            <td>Max</td>
+            <td>{{stats.humidity.max}}%</td>
+        </tr>
+        <tr>
+            <td>Average</td>
+            <td>{{stats.humidity.mean}}%</td>
+        </tr>
+    </table>
+</div>

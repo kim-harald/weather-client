@@ -10,7 +10,7 @@ import { Mode, Modes } from './models/mode';
 import { Reading } from './models/reading';
 import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
-import { SummaryReading } from './models/SummaryReading';
+import { SummaryReading } from './models/stats/SummaryReading';
 import { WeatherStats } from './models/WeatherStats.1';
 import { ApiService } from './services/api.service';
 
@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
   public readings: ReadingDisplay[] = [];
   public hourlySummaries: SummaryReading[] = [];
   public dailySummaries: SummaryReading[] = [];
-  public stats: WeatherStats = {} as WeatherStats;
+  public allSummary: SummaryReading = {} as SummaryReading;
   public mode: Mode = 'temperature';
 
   public rounded = rounded;
@@ -50,7 +50,7 @@ export class AppComponent implements OnInit {
   }
 
   public range: { min: number; max: number } = { min: -40, max: 40 };
-  
+
   private _datarows: Record<Mode, DataRow[]> = {
     temperature: [],
     humidity: [],
@@ -60,7 +60,7 @@ export class AppComponent implements OnInit {
     return this._datarows;
   }
 
-  public isReady:boolean = false;
+  public isReady: boolean = false;
 
   public value = 0;
   constructor(
@@ -69,13 +69,13 @@ export class AppComponent implements OnInit {
     private readonly deviceService: DeviceDetectorService
   ) {
     this.setupReadings();
-    
+
   }
 
   public ngOnInit(): void {
     this.isMobile = this.deviceService.isMobile();
     this.setupReadingListener();
-    
+
   }
 
   public convertToDataRows(readings: Reading[]): Record<Mode, DataRow[]> {
@@ -119,7 +119,7 @@ export class AppComponent implements OnInit {
         )
       )
       .subscribe((data) => {
-        
+
         this._datarows = this.convertToDataRows(data);
         const lastReading = data[data.length - 1];
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
@@ -130,6 +130,8 @@ export class AppComponent implements OnInit {
         this.readings = data;
         this.isReady = true;
       });
+
+    this.setAllSummary();
 
     this.mqttService
       .observe(`${k_LOCATION}/sensor/all`)
@@ -157,14 +159,43 @@ export class AppComponent implements OnInit {
           this._datarows = this.convertToDataRows(this.readings);
           this.setRange();
         }
+
+        if (
+          reading.temperature < this.allSummary.temperature.min ||
+          reading.temperature > this.allSummary.temperature.max ||
+          reading.pressure < this.allSummary.pressure.min ||
+          reading.pressure > this.allSummary.pressure.max ||
+          reading.humidity < this.allSummary.humidity.min ||
+          reading.humidity > this.allSummary.humidity.max
+
+        ) {
+          this.setAllSummary();
+        }
       });
   }
 
-  private setRange():void {
-    const range:Record<Mode,{min:number,max:number}> = {
-      'temperature':getRange(this._datarows['temperature'].map(x =>x.value)),
-      'pressure':getRange(this._datarows['pressure'].map(x =>x.value)),
-      'humidity':getRange(this._datarows['humidity'].map(x =>x.value))
+  private setAllSummary(): void {
+    this.apiService.getSummary(k_LOCATION).subscribe(data => {
+      data.temperature.max = rounded(data.temperature.max - cKelvinOffset, 1);
+      data.temperature.min = rounded(data.temperature.min - cKelvinOffset, 1);
+      data.temperature.mean = rounded(data.temperature.mean - cKelvinOffset, 1);
+
+      data.pressure.max = rounded(data.pressure.max / 100, 0);
+      data.pressure.min = rounded(data.pressure.min / 100, 0);
+      data.pressure.mean = rounded(data.pressure.mean / 100, 0);
+
+      data.humidity.max = rounded(data.humidity.max, 0);
+      data.humidity.min = rounded(data.humidity.min, 0);
+      data.humidity.mean = rounded(data.humidity.mean, 0);
+      this.allSummary = data;
+    });
+  }
+
+  private setRange(): void {
+    const range: Record<Mode, { min: number, max: number }> = {
+      'temperature': getRange(this._datarows['temperature'].map(x => x.value)),
+      'pressure': getRange(this._datarows['pressure'].map(x => x.value)),
+      'humidity': getRange(this._datarows['humidity'].map(x => x.value))
     }
     this.chartOptions['temperature'].min = range['temperature'].min;
     this.chartOptions['temperature'].max = range['temperature'].max;
@@ -330,5 +361,5 @@ const getRange = (values: number[]): { min: number; max: number } => {
     values.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n
   );
 
-  return { min: rounded(mean - 5 * sd,1), max: rounded(mean + 5 * sd,1) };
+  return { min: rounded(mean - 5 * sd, 1), max: rounded(mean + 5 * sd, 1) };
 };
