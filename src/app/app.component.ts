@@ -15,7 +15,9 @@ import { WeatherStats } from './models/WeatherStats.1';
 import { ApiService } from './services/api.service';
 
 const k_LOCATION = 'gimel';
-const k_Samples = 720;
+const k_Hours = 4;
+const k_Samples = 60/10 * 60 * k_Hours;
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -69,13 +71,11 @@ export class AppComponent implements OnInit {
     private readonly deviceService: DeviceDetectorService
   ) {
     this.setupReadings();
-
   }
 
   public ngOnInit(): void {
     this.isMobile = this.deviceService.isMobile();
     this.setupReadingListener();
-
   }
 
   public convertToDataRows(readings: Reading[]): Record<Mode, DataRow[]> {
@@ -104,7 +104,7 @@ export class AppComponent implements OnInit {
 
   private setupReadings(): void {
     const startDate = new Date();
-    startDate.setHours(startDate.getHours() - 2);
+    startDate.setHours(startDate.getHours() - k_Hours);
     this.apiService
       .getReadings(k_LOCATION, startDate, new Date())
       .pipe(
@@ -119,7 +119,6 @@ export class AppComponent implements OnInit {
         )
       )
       .subscribe((data) => {
-
         this._datarows = this.convertToDataRows(data);
         const lastReading = data[data.length - 1];
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
@@ -154,28 +153,18 @@ export class AppComponent implements OnInit {
 
           this.readings.sort((a, b) => a.ts - b.ts);
           const start = new Date();
-          start.setHours(start.getHours() - 2);
+          start.setHours(start.getHours() - k_Hours);
           this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
           this._datarows = this.convertToDataRows(this.readings);
           this.setRange();
         }
 
-        if (
-          reading.temperature < this.allSummary.temperature.min ||
-          reading.temperature > this.allSummary.temperature.max ||
-          reading.pressure < this.allSummary.pressure.min ||
-          reading.pressure > this.allSummary.pressure.max ||
-          reading.humidity < this.allSummary.humidity.min ||
-          reading.humidity > this.allSummary.humidity.max
-
-        ) {
-          this.setAllSummary();
-        }
+        this.setAllSummary();
       });
   }
 
   private setAllSummary(): void {
-    this.apiService.getSummary(k_LOCATION).subscribe(data => {
+    this.apiService.getSummary(k_LOCATION).subscribe((data) => {
       data.temperature.max = rounded(data.temperature.max - cKelvinOffset, 1);
       data.temperature.min = rounded(data.temperature.min - cKelvinOffset, 1);
       data.temperature.mean = rounded(data.temperature.mean - cKelvinOffset, 1);
@@ -192,11 +181,11 @@ export class AppComponent implements OnInit {
   }
 
   private setRange(): void {
-    const range: Record<Mode, { min: number, max: number }> = {
-      'temperature': getRange(this._datarows['temperature'].map(x => x.value)),
-      'pressure': getRange(this._datarows['pressure'].map(x => x.value)),
-      'humidity': getRange(this._datarows['humidity'].map(x => x.value))
-    }
+    const range: Record<Mode, { min: number; max: number }> = {
+      temperature: getRange(this._datarows['temperature'].map((x) => x.value)),
+      pressure: getRange(this._datarows['pressure'].map((x) => x.value)),
+      humidity: getRange(this._datarows['humidity'].map((x) => x.value)),
+    };
     this.chartOptions['temperature'].min = range['temperature'].min;
     this.chartOptions['temperature'].max = range['temperature'].max;
     this.chartOptions['pressure'].min = range['pressure'].min;
@@ -306,7 +295,7 @@ const rotate = (
   if (values.length > limit) {
     values.splice(0, 1);
   }
-
+  //console.info(values);
   return values;
 };
 

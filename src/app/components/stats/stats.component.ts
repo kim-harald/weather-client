@@ -14,9 +14,9 @@ export class StatsComponent implements OnInit {
   public set stats(v: SummaryReading) {
     this._stats = v;
     if (this._stats && this._stats.first && this._stats.last) {
-      this.title = new Date(this._stats.first).toJSON().slice(0, 19).replace('T',' ') 
+      this.title = new Date(this._stats.first).toStandard()
       + ' til ' 
-      + new Date(this._stats.last).toJSON().slice(0,19).replace('T',' ');
+      + new Date(this._stats.last).toStandard();
     }
   }
 
