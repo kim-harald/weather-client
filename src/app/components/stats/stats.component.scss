@@ -2,14 +2,18 @@ table {
     position: absolute;
     color:antiquewhite;
 
+    min-width: 14em;
+    font-size: small;
+
     tr > td:nth-child(1) {
-        min-width: 6em;
+        min-width: 50%;
     }
 
     tr > td:nth-child(2) {
         text-align: right;
-        width:5.5em;
+        width:50%;
     }
+
 }
 
 .container {
