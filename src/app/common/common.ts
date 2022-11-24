@@ -115,8 +115,8 @@ export const trendline = (
 
 export const convertTime = (ts: number): string => {
   const d = new Date(ts);
-  const offset = d.getTimezoneOffset();
-  d.setMinutes(d.getMinutes() - offset);
+  // const offset = d.getTimezoneOffset();
+  // d.setMinutes(d.getMinutes() - offset);
   const hh = d.getHours().toString().padStart(2, '0');
   const mm = d.getMinutes().toString().padStart(2, '0');
   return hh + ':' + mm;

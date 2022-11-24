@@ -17,7 +17,6 @@ export class ApiService {
       map(readings => readings.map(reading => {
         return {
           ...reading,
-          ts: reading.ts ?? reading.when
         } as LocationReading
       })))
   }
