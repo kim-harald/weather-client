@@ -16,7 +16,7 @@ import { ApiService } from './services/api.service';
 
 const k_LOCATION = 'gimel';
 const k_Hours = 4;
-const k_Samples = 60/10 * 60 * k_Hours;
+const k_Samples = (60 / 10) * 60 * k_Hours;
 
 @Component({
   selector: 'app-root',
@@ -113,7 +113,7 @@ export class AppComponent implements OnInit {
           data.map((item) => {
             return {
               ...item,
-              ts:Number(item.ts),
+              ts: Number(item.ts),
               when: new Date(Number(item.ts)),
             } as ReadingDisplay;
           })
@@ -141,11 +141,7 @@ export class AppComponent implements OnInit {
         })
       )
       .subscribe((reading) => {
-        if (
-          !this.readings.find(
-            (f) => f.id === reading.id
-          )
-        ) {
+        if (!this.readings.find((f) => f.id === reading.id)) {
           const when = new Date(reading.ts);
           //when.setMinutes(when.getMinutes() + when.getTimezoneOffset());
           this.readings.push({
@@ -153,7 +149,6 @@ export class AppComponent implements OnInit {
             when: when,
             location: k_LOCATION,
           });
-
 
           this.readings.sort((a, b) => a.ts - b.ts);
           const start = new Date();
@@ -187,8 +182,8 @@ export class AppComponent implements OnInit {
   private setRange(): void {
     const range: Record<Mode, { min: number; max: number }> = {
       temperature: getRange(this._datarows['temperature'].map((x) => x.value)),
-      pressure: getRange(this._datarows['pressure'].map((x) => x.value)),
-      humidity: {min:0,max:100},
+      pressure: { min: 800, max: 1200 },
+      humidity: { min: 0, max: 100 },
     };
     this.chartOptions['temperature'].min = range['temperature'].min;
     this.chartOptions['temperature'].max = range['temperature'].max;
@@ -348,9 +343,8 @@ const convertValue = (mode: Mode, value: number) => {
 };
 
 const getRange = (values: number[]): { min: number; max: number } => {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
 
-  const min = (Math.min(...values));
-  const max = (Math.max(...values));
-
-  return { min: Math.floor(min / 5)*5, max: Math.ceil(max / 5)*5 };
+  return { min: Math.floor(min / 5) * 5, max: Math.ceil(max / 5) * 5 };
 };
