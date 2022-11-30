@@ -28,9 +28,10 @@ app-battery {
 
 .chart-container {
   position: relative;
-  display: block;
+  display: inline-block;
   width:100%;
 }
+
 
 app-weather-chart {
   position: absolute;

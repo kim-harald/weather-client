@@ -81,7 +81,7 @@ export class WeatherChartComponent implements OnInit {
           maxValue: this._range.max,
           minValue: this._range.min,
         },
-        
+        curveType: 'function',
         width: 1200,
         height: 500,
         backgroundColor: {
@@ -91,6 +91,7 @@ export class WeatherChartComponent implements OnInit {
         legend: {
           position: 'none',
         },
+        
       },
     };
   }

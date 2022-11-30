@@ -63,3 +63,35 @@
     [columns]="chartOptions['humidity'].columns"
   ></app-weather-chart>
 </div>
+
+<div *ngIf="isReady && !isMobile" class="chart-container1">
+  <app-weather-chart
+    [class]="mode === 'temperature' ? 'visible' : 'hidden'"
+    title=""
+    [data]="SummaryDataRows['temperature']"
+    [max]="chartOptions['temperature'].max"
+    [min]="chartOptions['temperature'].min"
+    [colors]="chartOptions['temperature'].colors"
+    [columns]="chartOptions['temperature'].columns"
+  ></app-weather-chart>
+
+  <app-weather-chart
+    title=""
+    [class]="mode === 'pressure' ? 'visible' : 'hidden'"
+    [data]="SummaryDataRows['pressure']"
+    [max]="chartOptions['pressure'].max"
+    [min]="chartOptions['pressure'].min"
+    [colors]="chartOptions['pressure'].colors"
+    [columns]="chartOptions['pressure'].columns"
+  ></app-weather-chart>
+
+  <app-weather-chart
+    title=""
+    [class]="mode === 'humidity' ? 'visible' : 'hidden'"
+    [data]="SummaryDataRows['humidity']"
+    [max]="chartOptions['humidity'].max"
+    [min]="chartOptions['humidity'].min"
+    [colors]="chartOptions['humidity'].colors"
+    [columns]="chartOptions['humidity'].columns"
+  ></app-weather-chart>
+</div>

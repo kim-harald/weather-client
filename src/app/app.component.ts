@@ -16,7 +16,7 @@ import { ApiService } from './services/api.service';
 
 const k_LOCATION = 'gimel';
 const k_Hours = 4;
-const k_Samples = (60 / 10) * 60 * k_Hours;
+const k_Samples = 360 * k_Hours;
 
 @Component({
   selector: 'app-root',
@@ -62,6 +62,16 @@ export class AppComponent implements OnInit {
     return this._datarows;
   }
 
+  private _summaryDatarows: Record<Mode, DataRow[]> = {
+    temperature: [],
+    humidity: [],
+    pressure: [],
+  }
+
+  public get SummaryDataRows(): Record<Mode, DataRow[]> {
+    return this._summaryDatarows;
+  }
+
   public isReady: boolean = false;
 
   public value = 0;
@@ -76,27 +86,10 @@ export class AppComponent implements OnInit {
   public ngOnInit(): void {
     this.isMobile = this.deviceService.isMobile();
     this.setupReadingListener();
+    this.setHourlySummaries();
   }
 
-  public convertToDataRows(readings: Reading[]): Record<Mode, DataRow[]> {
-    const result: Record<Mode, DataRow[]> = {
-      temperature: [],
-      humidity: [],
-      pressure: [],
-    };
-    Modes.forEach((s) => {
-      const mode = s as Mode;
-      const values = readings.map((reading) => {
-        return {
-          ts: reading.ts,
-          value: convertValue(mode, (reading as any)[mode]),
-        };
-      });
-      result[mode] = values;
-    });
 
-    return result;
-  }
 
   public handleClick(mode: Mode): void {
     this.mode = mode;
@@ -120,7 +113,7 @@ export class AppComponent implements OnInit {
         )
       )
       .subscribe((data) => {
-        this._datarows = this.convertToDataRows(data);
+        this._datarows = convertToDataRows(data);
         const lastReading = data[data.length - 1];
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
         this.pressure = rounded(lastReading.pressure / 100, 0);
@@ -143,7 +136,6 @@ export class AppComponent implements OnInit {
       .subscribe((reading) => {
         if (!this.readings.find((f) => f.id === reading.id)) {
           const when = new Date(reading.ts);
-          //when.setMinutes(when.getMinutes() + when.getTimezoneOffset());
           this.readings.push({
             ...reading,
             when: when,
@@ -154,11 +146,12 @@ export class AppComponent implements OnInit {
           const start = new Date();
           start.setHours(start.getHours() - k_Hours);
           this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
-          this._datarows = this.convertToDataRows(this.readings);
+          this._datarows = convertToDataRows(this.readings);
           this.setRange();
         }
 
         this.setAllSummary();
+        this.setHourlySummaries();
       });
   }
 
@@ -181,8 +174,8 @@ export class AppComponent implements OnInit {
 
   private setRange(): void {
     const range: Record<Mode, { min: number; max: number }> = {
-      temperature: getRange(this._datarows['temperature'].map((x) => x.value)),
-      pressure: { min: 800, max: 1200 },
+      temperature: getRange(this._datarows['temperature'].map((x) => x.value),5),
+      pressure: getRange(this._datarows['pressure'].map((x) => x.value),50),
       humidity: { min: 0, max: 100 },
     };
     this.chartOptions['temperature'].min = range['temperature'].min;
@@ -255,17 +248,20 @@ export class AppComponent implements OnInit {
             this.humidity = value;
             return;
         }
+
+        
       });
   }
 
-  private getHourlySummaries(): void {
+  private setHourlySummaries(): void {
     const startDate = new Date();
-    startDate.setHours(startDate.getHours() - 24);
+    startDate.setHours(startDate.getHours() - 48);
 
     this.apiService
       .getHourly(k_LOCATION, startDate, new Date())
       .subscribe((summaryReadings) => {
         this.hourlySummaries = summaryReadings;
+        this._summaryDatarows = convertToDataRows(summaryReadings);
       });
   }
 
@@ -277,6 +273,7 @@ export class AppComponent implements OnInit {
       .getDaily(k_LOCATION, startDate, new Date())
       .subscribe((summaryReadings) => {
         this.dailySummaries = summaryReadings;
+        
       });
   }
 
@@ -331,7 +328,7 @@ const buildSamples = (
   return result;
 };
 
-const convertValue = (mode: Mode, value: number) => {
+const convertValue = (mode: Mode, value: number):number => {
   switch (mode) {
     case 'humidity':
       return value;
@@ -342,9 +339,40 @@ const convertValue = (mode: Mode, value: number) => {
   }
 };
 
-const getRange = (values: number[]): { min: number; max: number } => {
+const getRange = (values: number[], multiplier:number = 5): { min: number; max: number } => {
   const min = Math.min(...values);
   const max = Math.max(...values);
 
-  return { min: Math.floor(min / 5) * 5, max: Math.ceil(max / 5) * 5 };
+  return { min: Math.floor(min / multiplier) * multiplier, max: Math.ceil(max / multiplier) * multiplier };
+};
+
+const convertToDataRows = (items: Reading[] | SummaryReading[]): Record<Mode, DataRow[]> =>{
+  const result: Record<Mode, DataRow[]> = {
+    temperature: [],
+    humidity: [],
+    pressure: [],
+  };
+
+  const isReading = (items[0] as any).type == null;
+    Modes.forEach((s) => {
+      const mode = s as Mode;
+      const values = items.map((item) => {
+        return isReading 
+        ? {
+          ts: (item as Reading).ts,
+          value: convertValue(mode, (item as any)[mode]),
+        }
+        : {
+          ts: (item as any).ts,
+          value: [
+            (item as any)[mode].max,
+            (item as any)[mode].mean,
+            (item as any)[mode].min,
+          ]
+        };
+      });
+      result[mode] = values;
+    });
+  
+    return result;
 };
