@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { MqttService } from 'ngx-mqtt';
 import { map } from 'rxjs';
-import { cKelvinOffset, rounded, trendline } from './common/common';
+import { cKelvinOffset, convertDate, convertTime, rounded, trendline } from './common/common';
 import { kChartOptions } from './common/settings';
 import { DataRow } from './models/datarow';
 import { LocationReading } from './models/locationreading';
@@ -11,7 +11,6 @@ import { Reading } from './models/reading';
 import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/stats/SummaryReading';
-import { WeatherStats } from './models/WeatherStats.1';
 import { ApiService } from './services/api.service';
 
 const k_LOCATION = 'gimel';
@@ -25,8 +24,8 @@ const k_Samples = 360 * k_Hours;
 })
 export class AppComponent implements OnInit {
   public readings: ReadingDisplay[] = [];
-  public hourlySummaries: SummaryReading[] = [];
-  public dailySummaries: SummaryReading[] = [];
+  // public hourlySummaries: SummaryReading[] = [];
+  // public dailySummaries: SummaryReading[] = [];
   public allSummary: SummaryReading = {} as SummaryReading;
   public mode: Mode = 'temperature';
 
@@ -62,14 +61,24 @@ export class AppComponent implements OnInit {
     return this._datarows;
   }
 
-  private _summaryDatarows: Record<Mode, DataRow[]> = {
+  private _hourlyDatarows: Record<Mode, DataRow[]> = {
     temperature: [],
     humidity: [],
     pressure: [],
   }
 
-  public get SummaryDataRows(): Record<Mode, DataRow[]> {
-    return this._summaryDatarows;
+  public get HourlyDataRows(): Record<Mode, DataRow[]> {
+    return this._hourlyDatarows;
+  }
+
+  private _dailyDatarows: Record<Mode, DataRow[]> = {
+    temperature: [],
+    humidity: [],
+    pressure: [],
+  }
+
+  public get DailyDataRows(): Record<Mode, DataRow[]> {
+    return this._dailyDatarows;
   }
 
   public isReady: boolean = false;
@@ -87,9 +96,8 @@ export class AppComponent implements OnInit {
     this.isMobile = this.deviceService.isMobile();
     this.setupReadingListener();
     this.setHourlySummaries();
+    this.setDailySummaries();
   }
-
-
 
   public handleClick(mode: Mode): void {
     this.mode = mode;
@@ -113,7 +121,7 @@ export class AppComponent implements OnInit {
         )
       )
       .subscribe((data) => {
-        this._datarows = convertToDataRows(data);
+        this._datarows = convertToDataRows(data, '5min');
         const lastReading = data[data.length - 1];
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
         this.pressure = rounded(lastReading.pressure / 100, 0);
@@ -146,12 +154,13 @@ export class AppComponent implements OnInit {
           const start = new Date();
           start.setHours(start.getHours() - k_Hours);
           this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
-          this._datarows = convertToDataRows(this.readings);
+          this._datarows = convertToDataRows(this.readings,'5min');
           this.setRange();
         }
 
         this.setAllSummary();
         this.setHourlySummaries();
+        this.setDailySummaries();
       });
   }
 
@@ -260,20 +269,18 @@ export class AppComponent implements OnInit {
     this.apiService
       .getHourly(k_LOCATION, startDate, new Date())
       .subscribe((summaryReadings) => {
-        this.hourlySummaries = summaryReadings;
-        this._summaryDatarows = convertToDataRows(summaryReadings);
+        this._hourlyDatarows = convertToDataRows(summaryReadings,'hour');
       });
   }
 
-  private getDailySummaries(): void {
+  private setDailySummaries(): void {
     const startDate = new Date();
-    startDate.setHours(startDate.getHours() - 24);
+    startDate.setDate(startDate.getDate() - 60);
 
     this.apiService
       .getDaily(k_LOCATION, startDate, new Date())
       .subscribe((summaryReadings) => {
-        this.dailySummaries = summaryReadings;
-        
+        this._dailyDatarows = convertToDataRows(summaryReadings,'day');
       });
   }
 
@@ -335,7 +342,7 @@ const convertValue = (mode: Mode, value: number):number => {
     case 'pressure':
       return rounded(value / 100, 0);
     case 'temperature':
-      return rounded(value - cKelvinOffset, 1);
+      return value !== 0 ? rounded(value - cKelvinOffset, 1) : 0;
   }
 };
 
@@ -346,33 +353,45 @@ const getRange = (values: number[], multiplier:number = 5): { min: number; max: 
   return { min: Math.floor(min / multiplier) * multiplier, max: Math.ceil(max / multiplier) * multiplier };
 };
 
-const convertToDataRows = (items: Reading[] | SummaryReading[]): Record<Mode, DataRow[]> =>{
+const convertToDataRows = (items: Reading[] | SummaryReading[], summaryType:SummaryType): Record<Mode, DataRow[]> =>{
   const result: Record<Mode, DataRow[]> = {
     temperature: [],
     humidity: [],
     pressure: [],
   };
 
-  const isReading = (items[0] as any).type == null;
     Modes.forEach((s) => {
       const mode = s as Mode;
       const values = items.map((item) => {
-        return isReading 
-        ? {
-          ts: (item as Reading).ts,
-          value: convertValue(mode, (item as any)[mode]),
+        switch (summaryType) {
+          case '5min': return {
+            when: convertTime((item as Reading).ts),
+            value: convertValue(mode, (item as any)[mode]),
+          }
+          case 'hour': return {
+            
+              when: convertTime((item as any).ts),
+              value: [
+                convertValue(mode,(item as any)[mode].max),
+                convertValue(mode,(item as any)[mode].mean),
+                convertValue(mode,(item as any)[mode].min),
+              ]
+            }
+          case 'day': return {
+            when: convertDate((item as any).ts),
+              value: [
+                convertValue(mode,(item as any)[mode].max),
+                convertValue(mode,(item as any)[mode].mean),
+                convertValue(mode,(item as any)[mode].min),
+              ]
+          }
         }
-        : {
-          ts: (item as any).ts,
-          value: [
-            (item as any)[mode].max,
-            (item as any)[mode].mean,
-            (item as any)[mode].min,
-          ]
-        };
+        
       });
       result[mode] = values;
     });
   
     return result;
 };
+
+type SummaryType = '5min' | 'hour' | 'day';

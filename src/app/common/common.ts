@@ -121,3 +121,12 @@ export const convertTime = (ts: number): string => {
   const mm = d.getMinutes().toString().padStart(2, '0');
   return hh + ':' + mm;
 };
+
+export const convertDate = (ts:number):string => {
+  const d = new Date(ts);
+  const dd = d.getDate();
+  const mm = d.getMonth();
+  const yy = d.getFullYear();
+
+  return dd + '.' + mm + '.' + yy;
+}

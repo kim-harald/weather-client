@@ -1,7 +1,9 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ChartType, Column, GoogleChartComponent } from 'angular-google-charts';
+import { timeStamp } from 'console';
 import { convertTime } from 'src/app/common/common';
 import { DataRow } from 'src/app/models/datarow';
+import { isArray } from 'util';
 
 @Component({
   selector: 'app-weather-chart',
@@ -82,8 +84,8 @@ export class WeatherChartComponent implements OnInit {
           minValue: this._range.min,
         },
         curveType: 'function',
-        width: 1200,
-        height: 500,
+        width: this.width,
+        height: this.height,
         backgroundColor: {
           fill: 'rgb(10,10,10)',
           opacity: 0,
@@ -106,7 +108,10 @@ export class WeatherChartComponent implements OnInit {
 const convert = (rows: DataRow[], columns:Column[]): any[] => {
   const result: any[] = [];
   rows.forEach((row) => {
-    const entry = [convertTime(row.ts), row.value];
+     
+    const entry = Array.isArray(row.value) 
+    ? [row.when].concat(row.value)
+    : [row.when, row.value];
     result.push(entry);
   });
   return result;

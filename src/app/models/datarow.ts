@@ -1,4 +1,4 @@
 export type DataRow = {
-  ts: number;
+  when: string;
   value: any;
 };
