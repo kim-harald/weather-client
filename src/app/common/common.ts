@@ -125,7 +125,7 @@ export const convertTime = (ts: number): string => {
 export const convertDate = (ts:number):string => {
   const d = new Date(ts);
   const dd = d.getDate();
-  const mm = d.getMonth();
+  const mm = d.getMonth()+1;
   const yy = d.getFullYear();
 
   return dd + '.' + mm + '.' + yy;
