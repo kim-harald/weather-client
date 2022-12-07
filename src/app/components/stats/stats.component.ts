@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { SummaryReading } from 'src/app/models/stats/SummaryReading';
+import { WeatherStats } from 'src/app/models/stats/weatherstats';
 
 @Component({
   selector: 'app-stats',
@@ -8,19 +9,19 @@ import { SummaryReading } from 'src/app/models/stats/SummaryReading';
 })
 export class StatsComponent implements OnInit {
 
-  private _stats: SummaryReading = {} as SummaryReading;
+  private _stats: WeatherStats = {} as WeatherStats;
 
   @Input()
-  public set stats(v: SummaryReading) {
+  public set stats(v: WeatherStats) {
     this._stats = v;
-    if (this._stats && this._stats.first && this._stats.last) {
-      this.title = new Date(this._stats.first).toStandard()
+    if (this._stats && this._stats.dateRange.start && this._stats.dateRange.end) {
+      this.title = new Date(this._stats.dateRange.start).toStandard()
       + ' til ' 
-      + new Date(this._stats.last).toStandard();
+      + new Date(this._stats.dateRange.end).toStandard();
     }
   }
 
-  public get stats(): SummaryReading {
+  public get stats(): WeatherStats {
     return this._stats;
   }
 
@@ -30,7 +31,7 @@ export class StatsComponent implements OnInit {
   public title: string = '';
 
   constructor() {
-    this.stats = {} as SummaryReading;
+    this.stats = {} as WeatherStats;
   }
 
   ngOnInit(): void {

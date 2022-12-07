@@ -3,11 +3,11 @@
         <caption>{{title}}</caption>
         <tr>
             <td>Min</td>
-            <td>{{stats.temperature.min}} C</td>
+            <td>{{stats.temperature.min.temperature}} C @ {{ 'new Date(stats.temperature.min.ts)' }}</td>
         </tr>
         <tr>
             <td>Max</td>
-            <td>{{stats.temperature.max}} C</td>
+            <td>{{stats.temperature.max.temperature}} C</td>
         </tr>
         <tr>
             <td>Average</td>
@@ -18,11 +18,11 @@
         <caption>{{title}}</caption>
         <tr>
             <td>Min</td>
-            <td>{{stats.pressure.min}} hPa</td>
+            <td>{{stats.pressure.min.pressure}} hPa</td>
         </tr>
         <tr>
             <td>Max</td>
-            <td>{{stats.pressure.max}} hPa</td>
+            <td>{{stats.pressure.max.pressure}} hPa</td>
         </tr>
         <tr>
             <td>Average</td>
@@ -33,11 +33,11 @@
         <caption>{{title}}</caption>
         <tr>
             <td>Min</td>
-            <td>{{stats.humidity.min}}%</td>
+            <td>{{stats.humidity.min.humidity}}%</td>
         </tr>
         <tr>
             <td>Max</td>
-            <td>{{stats.humidity.max}}%</td>
+            <td>{{stats.humidity.max.humidity}}%</td>
         </tr>
         <tr>
             <td>Average</td>

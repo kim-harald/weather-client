@@ -2,7 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { MqttService } from 'ngx-mqtt';
 import { map } from 'rxjs';
-import { cKelvinOffset, convertDate, convertTime, rounded, trendline } from './common/common';
+import {
+  cKelvinOffset,
+  convertDate,
+  convertTime,
+  rounded,
+  trendline,
+} from './common/common';
 import { kChartOptions } from './common/settings';
 import { DataRow } from './models/datarow';
 import { LocationReading } from './models/locationreading';
@@ -11,6 +17,7 @@ import { Reading } from './models/reading';
 import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/stats/SummaryReading';
+import { WeatherStats } from './models/stats/weatherstats';
 import { ApiService } from './services/api.service';
 
 const k_LOCATION = 'gimel';
@@ -65,7 +72,7 @@ export class AppComponent implements OnInit {
     temperature: [],
     humidity: [],
     pressure: [],
-  }
+  };
 
   public get HourlyDataRows(): Record<Mode, DataRow[]> {
     return this._hourlyDatarows;
@@ -75,10 +82,25 @@ export class AppComponent implements OnInit {
     temperature: [],
     humidity: [],
     pressure: [],
-  }
+  };
 
   public get DailyDataRows(): Record<Mode, DataRow[]> {
     return this._dailyDatarows;
+  }
+
+  private _stats24Hr: WeatherStats = {} as WeatherStats;
+  public get Stats24Hr(): WeatherStats {
+    return this._stats24Hr;
+  }
+
+  private _stats3Month: WeatherStats = {} as WeatherStats;
+  public get Stats3Month(): WeatherStats {
+    return this._stats3Month;
+  }
+
+  private _statsAll: WeatherStats = {} as WeatherStats;
+  public get StatsAll(): WeatherStats {
+    return this._statsAll;
   }
 
   public isReady: boolean = false;
@@ -154,7 +176,7 @@ export class AppComponent implements OnInit {
           const start = new Date();
           start.setHours(start.getHours() - k_Hours);
           this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
-          this._datarows = convertToDataRows(this.readings,'5min');
+          this._datarows = convertToDataRows(this.readings, '5min');
           this.setRange();
         }
 
@@ -183,8 +205,14 @@ export class AppComponent implements OnInit {
 
   private setRange(): void {
     const range: Record<Mode, { min: number; max: number }> = {
-      temperature: getRange(this._datarows['temperature'].map((x) => x.value),5),
-      pressure: getRange(this._datarows['pressure'].map((x) => x.value),50),
+      temperature: getRange(
+        this._datarows['temperature'].map((x) => x.value),
+        5
+      ),
+      pressure: getRange(
+        this._datarows['pressure'].map((x) => x.value),
+        50
+      ),
       humidity: { min: 0, max: 100 },
     };
     this.chartOptions['temperature'].min = range['temperature'].min;
@@ -257,8 +285,6 @@ export class AppComponent implements OnInit {
             this.humidity = value;
             return;
         }
-
-        
       });
   }
 
@@ -269,7 +295,7 @@ export class AppComponent implements OnInit {
     this.apiService
       .getHourly(k_LOCATION, startDate, new Date())
       .subscribe((summaryReadings) => {
-        this._hourlyDatarows = convertToDataRows(summaryReadings,'hour');
+        this._hourlyDatarows = convertToDataRows(summaryReadings, 'hour');
       });
   }
 
@@ -280,12 +306,30 @@ export class AppComponent implements OnInit {
     this.apiService
       .getDaily(k_LOCATION, startDate, new Date())
       .subscribe((summaryReadings) => {
-        this._dailyDatarows = convertToDataRows(summaryReadings,'day');
+        this._dailyDatarows = convertToDataRows(summaryReadings, 'day');
       });
   }
 
-  private getStats(type: string): void {
-    // this.apiService.getStats(k_LOCATION);
+  private get24hrStats(type: string): void {
+    const startDate = new Date();
+    startDate.setHours(startDate.getHours() - 24);
+    this.apiService.getStats(k_LOCATION, startDate, new Date()).subscribe(data => {
+      this._stats24Hr = data;
+    });
+  }
+
+  private get3MonthStats(type: string): void {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 3);
+    this.apiService.getStats(k_LOCATION, startDate, new Date()).subscribe(data => {
+      this._stats3Month = data;
+    });
+  }
+
+  private getAllStats(type: string): void {
+    this.apiService.getAllStats(k_LOCATION).subscribe(data => {
+      this._statsAll = data;
+    });
   }
 }
 
@@ -335,7 +379,7 @@ const buildSamples = (
   return result;
 };
 
-const convertValue = (mode: Mode, value: number):number => {
+const convertValue = (mode: Mode, value: number): number => {
   switch (mode) {
     case 'humidity':
       return value;
@@ -346,52 +390,62 @@ const convertValue = (mode: Mode, value: number):number => {
   }
 };
 
-const getRange = (values: number[], multiplier:number = 5): { min: number; max: number } => {
+const getRange = (
+  values: number[],
+  multiplier: number = 5
+): { min: number; max: number } => {
   const min = Math.min(...values);
   const max = Math.max(...values);
 
-  return { min: Math.floor(min / multiplier) * multiplier, max: Math.ceil(max / multiplier) * multiplier };
+  return {
+    min: Math.floor(min / multiplier) * multiplier,
+    max: Math.ceil(max / multiplier) * multiplier,
+  };
 };
 
-const convertToDataRows = (items: Reading[] | SummaryReading[], summaryType:SummaryType): Record<Mode, DataRow[]> =>{
+const convertToDataRows = (
+  items: Reading[] | SummaryReading[],
+  summaryType: SummaryType
+): Record<Mode, DataRow[]> => {
   const result: Record<Mode, DataRow[]> = {
     temperature: [],
     humidity: [],
     pressure: [],
   };
 
-    Modes.forEach((s) => {
-      const mode = s as Mode;
-      const values = items.map((item) => {
-        switch (summaryType) {
-          case '5min': return {
+  Modes.forEach((s) => {
+    const mode = s as Mode;
+    const values = items.map((item) => {
+      switch (summaryType) {
+        case '5min':
+          return {
             when: convertTime((item as Reading).ts),
             value: convertValue(mode, (item as any)[mode]),
-          }
-          case 'hour': return {
-            
-              when: convertTime((item as any).ts),
-              value: [
-                convertValue(mode,(item as any)[mode].max),
-                convertValue(mode,(item as any)[mode].mean),
-                convertValue(mode,(item as any)[mode].min),
-              ]
-            }
-          case 'day': return {
+          };
+        case 'hour':
+          return {
+            when: convertTime((item as any).ts),
+            value: [
+              convertValue(mode, (item as any)[mode].max),
+              convertValue(mode, (item as any)[mode].mean),
+              convertValue(mode, (item as any)[mode].min),
+            ],
+          };
+        case 'day':
+          return {
             when: convertDate((item as any).ts),
-              value: [
-                convertValue(mode,(item as any)[mode].max),
-                convertValue(mode,(item as any)[mode].mean),
-                convertValue(mode,(item as any)[mode].min),
-              ]
-          }
-        }
-        
-      });
-      result[mode] = values;
+            value: [
+              convertValue(mode, (item as any)[mode].max),
+              convertValue(mode, (item as any)[mode].mean),
+              convertValue(mode, (item as any)[mode].min),
+            ],
+          };
+      }
     });
-  
-    return result;
+    result[mode] = values;
+  });
+
+  return result;
 };
 
 type SummaryType = '5min' | 'hour' | 'day';

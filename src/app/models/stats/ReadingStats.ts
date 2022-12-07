@@ -1,7 +1,7 @@
 import { Reading } from "../reading";
 
 
-export type ReadingStats = {
+export type ReadingStat = {
     max: Reading;
     min: Reading;
     mean: number;
