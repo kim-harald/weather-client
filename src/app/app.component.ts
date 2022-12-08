@@ -6,6 +6,7 @@ import {
   cKelvinOffset,
   convertDate,
   convertTime,
+  normaliseWeatherStats,
   rounded,
   trendline,
 } from './common/common';
@@ -119,6 +120,9 @@ export class AppComponent implements OnInit {
     this.setupReadingListener();
     this.setHourlySummaries();
     this.setDailySummaries();
+    this.set24hrStats(this.mode);
+    this.set3MonthStats(this.mode);
+    this.setAllStats(this.mode);
   }
 
   public handleClick(mode: Mode): void {
@@ -183,6 +187,10 @@ export class AppComponent implements OnInit {
         this.setAllSummary();
         this.setHourlySummaries();
         this.setDailySummaries();
+
+        this.set24hrStats(this.mode);
+        this.set3MonthStats(this.mode);
+        this.setAllStats(this.mode);
       });
   }
 
@@ -310,25 +318,25 @@ export class AppComponent implements OnInit {
       });
   }
 
-  private get24hrStats(type: string): void {
+  private set24hrStats(type: string): void {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 24);
     this.apiService.getStats(k_LOCATION, startDate, new Date()).subscribe(data => {
-      this._stats24Hr = data;
+      this._stats24Hr = normaliseWeatherStats(data);
     });
   }
 
-  private get3MonthStats(type: string): void {
+  private set3MonthStats(type: string): void {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 3);
     this.apiService.getStats(k_LOCATION, startDate, new Date()).subscribe(data => {
-      this._stats3Month = data;
+      this._stats3Month = normaliseWeatherStats(data);
     });
   }
 
-  private getAllStats(type: string): void {
+  private setAllStats(type: string): void {
     this.apiService.getAllStats(k_LOCATION).subscribe(data => {
-      this._statsAll = data;
+      this._statsAll = normaliseWeatherStats(data);
     });
   }
 }

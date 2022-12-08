@@ -1,47 +1,62 @@
 <div class="container" *ngIf="stats">
-    <table [class]="mode=='temperature' ? 'visible':'hidden'" *ngIf="stats.temperature">
-        <caption>{{title}}</caption>
-        <tr>
-            <td>Min</td>
-            <td>{{stats.temperature.min.temperature}} C @ {{ 'new Date(stats.temperature.min.ts)' }}</td>
-        </tr>
-        <tr>
-            <td>Max</td>
-            <td>{{stats.temperature.max.temperature}} C</td>
-        </tr>
-        <tr>
-            <td>Average</td>
-            <td>{{stats.temperature.mean}} C</td>
-        </tr>
-    </table>
-    <table [class]="mode=='pressure' ? 'visible':'hidden'" *ngIf="stats.pressure">
-        <caption>{{title}}</caption>
-        <tr>
-            <td>Min</td>
-            <td>{{stats.pressure.min.pressure}} hPa</td>
-        </tr>
-        <tr>
-            <td>Max</td>
-            <td>{{stats.pressure.max.pressure}} hPa</td>
-        </tr>
-        <tr>
-            <td>Average</td>
-            <td>{{stats.pressure.mean}} hPa</td>
-        </tr>
-    </table>
-    <table [class]="mode=='humidity' ? 'visible':'hidden'" *ngIf="stats.humidity">
-        <caption>{{title}}</caption>
-        <tr>
-            <td>Min</td>
-            <td>{{stats.humidity.min.humidity}}%</td>
-        </tr>
-        <tr>
-            <td>Max</td>
-            <td>{{stats.humidity.max.humidity}}%</td>
-        </tr>
-        <tr>
-            <td>Average</td>
-            <td>{{stats.humidity.mean}}%</td>
-        </tr>
-    </table>
+    <div class="wrapper">
+        <table [class]="mode=='temperature' ? 'visible':'hidden'" *ngIf="stats.temperature">
+            <caption>{{title}}</caption>
+            <tr>
+                <td>Min</td>
+                <td>{{stats.temperature.min.temperature | number: "1.1-1"}} C </td>
+                <td>@ {{ minTemperatureDate }}</td>
+            </tr>
+            <tr>
+                <td>Max</td>
+                <td>{{stats.temperature.max.temperature | number: "1.1-1"}} C </td>
+                <td>@ {{ maxTemperatureDate }}</td>
+            </tr>
+            <tr>
+                <td>Average</td>
+                <td>{{stats.temperature.mean | number: "1.1-1"}} C</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div class="wrapper">
+        <table [class]="mode=='pressure' ? 'visible':'hidden'" *ngIf="stats.pressure">
+            <caption>{{title}}</caption>
+            <tr>
+                <td>Min</td>
+                <td>{{stats.pressure.min.pressure | number: "1.1-1"}} hPa </td>
+                <td>@ {{ minPressureDate }}</td>
+            </tr>
+            <tr>
+                <td>Max</td>
+                <td>{{stats.pressure.max.pressure | number: "1.1-1"}} hPa </td>
+                <td>@ {{ maxPressureDate }}</td>
+            </tr>
+            <tr>
+                <td>Average</td>
+                <td>{{stats.pressure.mean | number: "1.1-1" }} hPa</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div class="wrapper">
+        <table [class]="mode=='humidity' ? 'visible':'hidden'" *ngIf="stats.humidity">
+            <caption>{{title}}</caption>
+            <tr>
+                <td>Min</td>
+                <td>{{stats.humidity.min.humidity | number: "1.0-0"}}% </td>
+                <td>@ {{ minHumidityDate }}</td>
+            </tr>
+            <tr>
+                <td>Max</td>
+                <td>{{stats.humidity.max.humidity | number: "1.0-0"}}% </td>
+                <td>@ {{ maxHumidityDate }}</td>
+            </tr>
+            <tr>
+                <td>Average</td>
+                <td>{{stats.humidity.mean | number: "1.0-0"}}%</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
 </div>

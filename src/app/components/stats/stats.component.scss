@@ -2,16 +2,16 @@ table {
     position: absolute;
     color:antiquewhite;
 
-    min-width: 14em;
+    min-width: 5em;
     font-size: small;
 
     tr > td:nth-child(1) {
-        min-width: 50%;
+        min-width: 4em;
     }
 
     tr > td:nth-child(2) {
         text-align: right;
-        width:50%;
+        min-width: 6em;
     }
 
 }
@@ -19,5 +19,12 @@ table {
 .container {
     position: relative;
     width:100%;
-    height: 10em;
+    
+}
+
+.wrapper {
+    position: unset;
+    display: block;
+    width: 18rem;
+    height: 4rem;
 }

@@ -1,4 +1,6 @@
 import { Reading } from '../models/reading';
+import { SummaryReading } from '../models/stats/SummaryReading';
+import { WeatherStats } from '../models/stats/weatherstats';
 import './string.extensions';
 
 export const cKelvinOffset = 273.15;
@@ -126,7 +128,68 @@ export const convertDate = (ts:number):string => {
   const d = new Date(ts);
   const dd = d.getDate();
   const mm = d.getMonth()+1;
-  const yy = d.getFullYear();
+  const yy = d.getFullYear().toString().slice(2);
 
   return dd + '.' + mm + '.' + yy;
 }
+
+export const normaliseSummary = (summaryReading: SummaryReading): SummaryReading => {
+  const max = normalise(summaryReading.temperature.max, summaryReading.pressure.max, summaryReading.humidity.max);
+  const min = normalise(summaryReading.temperature.min, summaryReading.pressure.min, summaryReading.humidity.min);
+  const mean = normalise(summaryReading.temperature.mean, summaryReading.pressure.mean, summaryReading.humidity.mean);
+
+  return {
+      ...summaryReading,
+      temperature: {
+          max: max.temperature,
+          min: min.temperature,
+          mean: mean.temperature
+      },
+      pressure: {
+          max: max.pressure,
+          min: min.pressure,
+          mean: mean.pressure
+      },
+      humidity: {
+          max: max.humidity,
+          min: min.humidity,
+          mean: mean.humidity
+      }
+
+  }
+}
+
+export const normaliseWeatherStats = (weatherStat: WeatherStats): WeatherStats => {
+  const maxT = normaliseReading(weatherStat.temperature.max);
+  const minT = normaliseReading(weatherStat.temperature.min);
+  const maxP = normaliseReading(weatherStat.pressure.max);
+  const minP = normaliseReading(weatherStat.pressure.min);
+  const maxH = normaliseReading(weatherStat.humidity.max);
+  const minH = normaliseReading(weatherStat.humidity.min);
+  const mean = normalise(weatherStat.temperature.mean, weatherStat.pressure.mean, weatherStat.humidity.mean);
+
+
+  return {
+      ...weatherStat,
+      temperature: {
+          ...weatherStat.temperature,
+          min: minT,
+          max: maxT,
+          mean: mean.temperature
+      },
+      pressure: {
+          ...weatherStat.pressure,
+          min: minP,
+          max: maxP,
+          mean: mean.pressure
+      },
+      humidity: {
+          ...weatherStat.humidity,
+          min: minH,
+          max: maxH,
+          mean: mean.humidity
+      }
+  };
+}
+
+

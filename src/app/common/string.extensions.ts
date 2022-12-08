@@ -25,5 +25,5 @@ Date.prototype.toStandard = function() {
     const hh = thisDate.getHours().toString().padStart(2,'0');
     const nn = thisDate.getMinutes().toString().padStart(2,'0');
     // return `${yyyy}-${mm}-${dd} ${hh}:${nn}`;
-    return `${dd}/${mm}/${yy} ${hh}:${nn}`;
+    return `${dd}.${mm}.${yy} ${hh}:${nn}`;
 }
