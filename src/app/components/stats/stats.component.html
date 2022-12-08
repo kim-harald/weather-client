@@ -1,5 +1,5 @@
 <div class="container" *ngIf="stats">
-    <div class="wrapper">
+    <div class="wrapper temperature">
         <table [class]="mode=='temperature' ? 'visible':'hidden'" *ngIf="stats.temperature">
             <caption>{{title}}</caption>
             <tr>
@@ -19,7 +19,7 @@
             </tr>
         </table>
     </div>
-    <div class="wrapper">
+    <div class="wrapper pressure">
         <table [class]="mode=='pressure' ? 'visible':'hidden'" *ngIf="stats.pressure">
             <caption>{{title}}</caption>
             <tr>
@@ -39,7 +39,7 @@
             </tr>
         </table>
     </div>
-    <div class="wrapper">
+    <div class="wrapper humidity">
         <table [class]="mode=='humidity' ? 'visible':'hidden'" *ngIf="stats.humidity">
             <caption>{{title}}</caption>
             <tr>
