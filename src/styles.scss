@@ -1,17 +1,20 @@
-/* You can add global styles to this file, and also import other style files */
+
+@import "./assets/variables.scss";
+
 body {
-  background-color: rgba(10, 10, 10, 1);
+  background-color: $background;
   font-family: Arial, Helvetica, sans-serif;
 }
 
 .hidden {
   visibility: hidden;
   opacity: 0;
-  transition: visibility 0s 2s, opacity 2s linear;
+  transition: visibility 0s 1s, opacity 1s linear;
 }
 
 .visible {
   visibility: visible;
   opacity: 1;
-  transition: opacity 2s linear;
+  transition: opacity 1s linear;
 }
+
