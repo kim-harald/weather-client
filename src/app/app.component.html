@@ -1,48 +1,65 @@
 <app-battery device="gimel"></app-battery>
-<app-weather-gauge
-  [units]="'C'"
-  [min]="-40"
-  [max]="40"
-  [color]="'rgba(200,50,50,0.4)'"
-  [value]="temperature"
-  [delta]="trendTemperature"
->
+<app-weather-gauge [units]="'C'" [min]="-40" [max]="40" [color]="'rgba(200,50,50,0.4)'" [value]="temperature"
+  [delta]="trendTemperature" (click)="handleClick('temperature')">
 </app-weather-gauge>
-<app-weather-gauge
-  [units]="'hPa'"
-  [min]="800"
-  [max]="1100"
-  [color]="'rgba(200,200,0,0.4)'"
-  [value]="pressure"
-  [delta]="trendPressure"
->
+<app-weather-gauge [units]="'hPa'" [min]="800" [max]="1100" [color]="'rgba(200,200,0,0.4)'" [value]="pressure"
+  [delta]="trendPressure" (click)="handleClick('pressure')">
 </app-weather-gauge>
-<app-weather-gauge
-  [units]="'%'"
-  [min]="0"
-  [max]="100"
-  [color]="'rgba(50,50,200,0.4)'"
-  [value]="humidity"
-  [delta]="trendHumidity"
->
+<app-weather-gauge [units]="'%'" [min]="0" [max]="100" [color]="'rgba(50,50,200,0.4)'" [value]="humidity"
+  [delta]="trendHumidity" (click)="handleClick('humidity')">
 </app-weather-gauge>
 
-<!-- <table *ngIf="readings.length > 0">
-  <tr>
-    <td>
-      {{ rounded(readings[readings.length - 1].temperature - 273.15, 1) }} C
-    </td>
-  </tr>
-  <tr>
-    <td>{{ rounded(readings[readings.length - 1].pressure / 100, 0) }} hPa</td>
-  </tr>
-  <tr>
-    <td>{{ readings[readings.length - 1].humidity }} %</td>
-  </tr>
-</table> -->
+<div class="blag">
+  <app-stats class="container" [mode]="mode" [stats]="StatsAll" title="Alle"></app-stats>
+  <app-stats class="container" [mode]="mode" [stats]="Stats3Month" title="Siste 3 månedene"></app-stats>
+  <app-stats class="container" [mode]="mode" [stats]="Stats24Hr" title="Siste 24 timer"></app-stats>
+</div>
+<div *ngIf="isReady && !isMobile" class="chart-section">
+  <div class="chart-container">
+    <app-weather-chart [class]="mode === 'temperature' ? 'visible' : 'hidden'" title="" [data]="DataRows['temperature']"
+      [max]="chartOptions['temperature'].max" [min]="chartOptions['temperature'].min" [width]="1200"
+      [colors]="chartOptions['temperature'].colors" [columns]="chartOptions['temperature'].columns"></app-weather-chart>
 
-<app-weather-chart
-  *ngIf="!isMobile"
-  title=""
-  [data]="readings"
-></app-weather-chart>
+    <app-weather-chart title="" [class]="mode === 'pressure' ? 'visible' : 'hidden'" [data]="DataRows['pressure']"
+      [max]="chartOptions['pressure'].max" [min]="chartOptions['pressure'].min" [width]="1200"
+      [colors]="chartOptions['pressure'].colors" [columns]="chartOptions['pressure'].columns"></app-weather-chart>
+
+    <app-weather-chart title="" [class]="mode === 'humidity' ? 'visible' : 'hidden'" [data]="DataRows['humidity']"
+      [max]="chartOptions['humidity'].max" [min]="chartOptions['humidity'].min" [width]="1200"
+      [colors]="chartOptions['humidity'].colors" [columns]="chartOptions['humidity'].columns"></app-weather-chart>
+  </div>
+</div>
+<div *ngIf="isReady && !isMobile" class="chart-section">
+  <div class="chart-container">
+    <app-weather-chart [class]="mode === 'temperature' ? 'visible' : 'hidden'" title=""
+      [data]="HourlyDataRows['temperature']" [max]="chartOptions['temperature'].max"
+      [min]="chartOptions['temperature'].min" [colors]="['Orange','Red','Purple']" [width]="1200"
+      [columns]="['Time','C','Mean','Min']"></app-weather-chart>
+
+    <app-weather-chart title="" [class]="mode === 'pressure' ? 'visible' : 'hidden'" [data]="HourlyDataRows['pressure']"
+      [max]="chartOptions['pressure'].max" [min]="chartOptions['pressure'].min" [colors]="['Yellow','Green','Orange']"
+      [columns]="['Time','hPa','Mean','Min']" [width]="1200"></app-weather-chart>
+
+    <app-weather-chart title="" [class]="mode === 'humidity' ? 'visible' : 'hidden'" [data]="HourlyDataRows['humidity']"
+      [max]="chartOptions['humidity'].max" [min]="chartOptions['humidity'].min"
+      [colors]="chartOptions['humidity'].colors" [columns]="['Time','%','Mean','Min']" [width]="1200">
+    </app-weather-chart>
+  </div>
+</div>
+<div *ngIf="isReady && !isMobile" class="chart-section">
+  <div class="chart-container">
+    <app-weather-chart [class]="mode === 'temperature' ? 'visible' : 'hidden'" title=""
+      [data]="DailyDataRows['temperature']" [max]="chartOptions['temperature'].max"
+      [min]="chartOptions['temperature'].min" [colors]="['Orange','Red','Purple']" [width]="1200"
+      [columns]="['Date','C','Mean','Min']"></app-weather-chart>
+
+    <app-weather-chart title="" [class]="mode === 'pressure' ? 'visible' : 'hidden'" [data]="DailyDataRows['pressure']"
+      [max]="chartOptions['pressure'].max" [min]="chartOptions['pressure'].min" [colors]="['Yellow','Green','Orange']"
+      [columns]="['Date','hPa','Mean','Min']" [width]="1200"></app-weather-chart>
+
+    <app-weather-chart title="" [class]="mode === 'humidity' ? 'visible' : 'hidden'" [data]="DailyDataRows['humidity']"
+      [max]="chartOptions['humidity'].max" [min]="chartOptions['humidity'].min"
+      [colors]="chartOptions['humidity'].colors" [columns]="['Date','%','Mean','Min']" [width]="1200">
+    </app-weather-chart>
+  </div>
+</div>

@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient} from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { LocationReading } from '../models/locationreading';
-import { SummaryReading } from '../models/SummaryReading';
+import { SummaryReading } from '../models/stats/SummaryReading';
+import { WeatherStats } from '../models/stats/weatherstats';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,6 @@ export class ApiService {
       map(readings => readings.map(reading => {
         return {
           ...reading,
-          ts: reading.when
         } as LocationReading
       })))
   }
@@ -31,4 +31,22 @@ export class ApiService {
     const url = `https://kimharald.com/api/weather/summary/daily/${location}/${fromDate.valueOf()}/${toDate.valueOf()}`;
     return this.http.get<SummaryReading[]>(url);
   }
+  
+  public getSummary(location:string): Observable<SummaryReading> {
+    const url = `https://kimharald.com/api/weather/summary/all/${location}`;
+    return this.http.get<SummaryReading>(url);
+  }
+
+  public getStats(location:string, fromDate:Date, toDate:Date): Observable<WeatherStats> {
+    const url = `https://kimharald.com/api/weather/stats/${location}/${fromDate.valueOf()}/${toDate.valueOf()}`;
+    return this.http.get<WeatherStats>(url)
+  }
+
+  public getAllStats(location:string): Observable<WeatherStats> {
+    const url = `https://kimharald.com/api/weather/stats/${location}`;
+    return this.http.get<WeatherStats>(url)
+  }
+
+  
+  
 }

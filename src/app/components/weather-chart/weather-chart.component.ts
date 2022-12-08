@@ -1,7 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { ChartType, Column } from 'angular-google-charts';
-import { cKelvinOffset, padLeft } from 'src/app/common/common';
-import { LocationReading } from 'src/app/models/locationreading';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ChartType, Column, GoogleChartComponent } from 'angular-google-charts';
+import { timeStamp } from 'console';
+import { convertTime } from 'src/app/common/common';
+import { DataRow } from 'src/app/models/datarow';
+import { isArray } from 'util';
 
 @Component({
   selector: 'app-weather-chart',
@@ -9,10 +11,11 @@ import { LocationReading } from 'src/app/models/locationreading';
   styleUrls: ['./weather-chart.component.scss'],
 })
 export class WeatherChartComponent implements OnInit {
-  private _data: any[] = [];
+  private _data: any[] = [[0, 0]];
+  private _range: {min?:number,max?:number} = {};
 
-  @Input()
-  public labels: string[] = [];
+  @ViewChild('chart', {static:false})
+  myChart:GoogleChartComponent | undefined;
 
   @Input()
   public title: string = '';
@@ -24,78 +27,92 @@ export class WeatherChartComponent implements OnInit {
   public width: number = 800;
 
   @Input()
-  public min: number | undefined;
+  public set min(v:number | undefined) {
+    this._range.min = v;
+    this.myChart?.chartWrapper.setOption('vAxis.minValue',v);
+  }
+
 
   @Input()
-  public max: number | undefined;
+  public set max(v: number | undefined ) {
+    this._range.max =v;
+    this.myChart?.chartWrapper.setOption('vAxis.maxValue',v);
+  }
+
+  @Input()
+  public colors: string[] = ['red'];
+
+  @Input()
+  public columns: Column[] = ['Time', 'Temperature'];
 
   @Input()
   public set data(v: any[]) {
     this._data = v ?? [];
-    this.chart.data = convert(v);
+    this.chart.data = convert(v, this.columns);
   }
 
   public get data(): any[] {
     return this._data;
   }
 
-  public columns: Column[] = [];
-  public chart = { type: ChartType.Line, data: this.data, options: {} };
+  public chart = { type: ChartType.LineChart, data: this.data, options: {} };
 
-  constructor() {}
+  constructor() {
+    
+  }
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
     this.chart = {
       type: ChartType.LineChart,
-      data: this.data,
+      data: convert(this._data, this.columns),
       options: {
-        colors:[
-          'red',
-          'yellow',
-          'blue'
-        ],
+        colors: this.colors,
         hAxis: {
-          title: 'Time',
+          title: this.columns[0],
         },
         vAxis: {
-          title: 'Temperature',
+          title: this.columns[1],
           gridlines: {
-            count: 0,
+            count: 6,
+            color: 'rgb(20,20,20)',
           },
-          maxValue:10,
-          minValue:-10
+          maxValue: this._range.max,
+          minValue: this._range.min,
         },
-        width: 1200,
-        height: 500,
+        curveType: 'function',
+        width: this.width,
+        height: this.height,
         backgroundColor: {
           fill: 'rgb(10,10,10)',
           opacity: 0,
         },
         legend: {
-          position:'none'
-        }
+          position: 'none',
+        },
+        
       },
     };
+  }
 
-    this.columns = ['Time', 'Temperature'];
+  draw():void {
+    if (this.myChart) {
+      this.myChart.chartWrapper.draw();
+    }
   }
 }
 
-const convert = (readings: LocationReading[]): any[] => {
+const convert = (rows: DataRow[], columns:Column[]): any[] => {
   const result: any[] = [];
-  readings.forEach((reading) => {
-    const entry = [
-      convertTime(reading.ts),
-      reading.temperature - cKelvinOffset,
-    ];
+  rows.forEach((row) => {
+     
+    const entry = Array.isArray(row.value) 
+    ? [row.when].concat(row.value)
+    : [row.when, row.value];
     result.push(entry);
   });
   return result;
-};
-
-const convertTime = (ts: number): string => {
-  const d = new Date(ts);
-  const hh = d.getHours().toString().padStart(2, '0');
-  const mm = d.getMinutes().toString().padStart(2, '0');
-  return hh + ':' + mm;
 };

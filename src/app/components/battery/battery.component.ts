@@ -14,7 +14,7 @@ const BATTERY_TOPIC = 'battery';
 export class BatteryComponent implements OnInit, OnDestroy {
 
   private _status: ISmartUPSStatus;
-  private _isOnline = false;
+  private _isOnline = true;
   private _watchdog = 3;
   private _mqttStatus?:MqttConnectionState
   private _subscription?: Subscription;
@@ -52,6 +52,7 @@ export class BatteryComponent implements OnInit, OnDestroy {
     const topic = `${this.device}/${BATTERY_TOPIC}`;
     this.subscribeToTopic(topic);
     this._status = this.storageService.get(topic);
+    this._status.ts = new Date().valueOf();
     this.setWatchdog();
     this.mqttService.state.subscribe(state => {
       this._mqttStatus = state;
@@ -90,9 +91,7 @@ export class BatteryComponent implements OnInit, OnDestroy {
 
   private setWatchdog():void {
     setInterval(()=> {
-      const t = this._status.ts - new Date().valueOf() + 20000;
-      // console.info(`ts:${this._status.ts},t:${t}`);
-      // console.info(`x:${this._mqttStatus}`);
+      const t = this._status.ts - new Date().valueOf() + 10000;
       if (t < 0) {
         this._watchdog -= 1;
       } else {

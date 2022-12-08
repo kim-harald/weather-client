@@ -1,0 +1,30 @@
+table {
+    position: absolute;
+    color:antiquewhite;
+
+    min-width: 5em;
+    font-size: small;
+
+    tr > td:nth-child(1) {
+        min-width: 4em;
+    }
+
+    tr > td:nth-child(2) {
+        text-align: right;
+        min-width: 6em;
+    }
+
+}
+
+.container {
+    position: relative;
+    width:100%;
+    
+}
+
+.wrapper {
+    position: unset;
+    display: block;
+    width: 18rem;
+    height: 4rem;
+}

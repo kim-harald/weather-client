@@ -1,4 +1,4 @@
-import { Summary } from "./Summary";
+import { Summary } from "./stats/Summary";
 
 
 export type DailyWeatherEntry = {

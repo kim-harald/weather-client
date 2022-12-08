@@ -1,20 +1,28 @@
-import { AfterContentInit, AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterContentInit,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { delay } from 'src/app/common/common';
 
 @Component({
   selector: 'app-weather-gauge',
   templateUrl: './weather-gauge.component.html',
   styleUrls: ['./weather-gauge.component.scss'],
 })
-export class WeatherGaugeComponent implements OnInit, AfterViewInit, AfterContentInit {
-  constructor() {
-
-  }
-  ngAfterContentInit(): void {
-
-  }
+export class WeatherGaugeComponent
+  implements OnInit, AfterViewInit, AfterContentInit
+{
+  constructor() {}
+  ngAfterContentInit(): void {}
   ngAfterViewInit(): void {
     this.ctx = this.canvas.nativeElement.getContext('2d');
-    this.update(this._value,0);
+    this.update(this._value);
+    this.updateDelta(this._delta);
   }
 
   @ViewChild('gauge', { static: true })
@@ -38,49 +46,63 @@ export class WeatherGaugeComponent implements OnInit, AfterViewInit, AfterConten
   }
 
   @Input()
-  public delta:number = 0;
+  public set delta(v: number) {
+    this._delta = v;
+    this.updateDelta(v);
+  }
+
+  public get delta(): number {
+    return this._delta;
+  }
 
   public set value(v: number) {
     this._value = v;
-    this.update(v, this.delta);
+    this.update(v);
+    this.updateDelta(this._delta);
   }
 
   public visibility = 'hidden';
 
   private ctx: CanvasRenderingContext2D | undefined | null;
   private _value: number = 0;
+  private _delta: number = 0;
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
 
-  }
-
-  private update(v: number, delta:number): void {
-    this.visibility = 'visible'
-    setTimeout(() => {
-      this.visibility = 'hidden'
-    }, 2000);
+  private update(value: number): void {
     if (this.ctx) {
       this.ctx.clearRect(1, 1, 230, 120);
       this.ctx.beginPath();
 
-      const endAngle = 180 + ((v - this.min) / (this.max - this.min)) * 180;
+      const endAngle = 180 + ((value - this.min) / (this.max - this.min)) * 180;
 
       annulus(this.ctx, 115, 120, 20, 100, 180, endAngle, false, this.color);
       this.ctx.save();
+    }
 
+    this.visibility = 'visible';
+    setTimeout(() => {
+      this.visibility = 'hidden';
+    }, 2000);
+  }
+
+  private updateDelta(delta: number): void {
+    let isFlip = false;
+    if (this.ctx) {
       let angle = 0;
       let deltaColor = 'green';
       if (delta > 0) {
         angle = 0;
         deltaColor = 'green';
-      } else if(delta === 0) {
+      } else if (delta === 0) {
         deltaColor = 'transparent';
       } else {
-        angle = 180;
+        angle = 0;
+        isFlip = true;
         deltaColor = 'red';
       }
-
-      triangle(this.ctx, 115,60,20,angle,deltaColor);
+      this.ctx.clearRect(95, 40, 40, 40);
+      triangle(this.ctx, 115, 60, 20, angle, deltaColor, isFlip);
     }
   }
 }
@@ -94,7 +116,7 @@ const annulus = (
   startAngle: number,
   endAngle: number,
   anticlockwise: boolean,
-  color:string
+  color: string
 ) => {
   ctx.lineWidth = width; //width;
   let r = width * 0.65;
@@ -110,26 +132,65 @@ const annulus = (
 
 const triangle = (
   ctx: CanvasRenderingContext2D,
-  centerX:number,
-  centerY:number,
-  radius:number,
-  angle:number,
-  color:string
+  centerX: number,
+  centerY: number,
+  radius: number,
+  angle: number,
+  color: string,
+  isFlip: boolean = false
 ) => {
-  const p1 = [ 0,-radius];
-  const p2 = [radius * Math.cos(Math.PI/6), radius * Math.sin(Math.PI/6)];
-  const p3 = [-radius * Math.cos(Math.PI/6), radius * Math.sin(Math.PI/6)];
+  const p1 = [0, -radius];
+  const p2 = [radius * Math.cos(Math.PI / 6), radius * Math.sin(Math.PI / 6)];
+  const p3 = [-radius * Math.cos(Math.PI / 6), radius * Math.sin(Math.PI / 6)];
 
   ctx.save();
-  ctx.translate(centerX,centerY);
-  ctx.rotate(angle * (Math.PI/180));
-  
+  ctx.translate(centerX, centerY);
+
+  if (isFlip) {
+    ctx.scale(1, -1);
+  }
+
+  ctx.rotate(angle * (Math.PI / 180));
+
   ctx.beginPath();
-  ctx.moveTo(p1[0],p1[1]);
-  ctx.lineTo(p2[0],p2[1]);
-  ctx.lineTo(p3[0],p3[1]);
+  ctx.moveTo(p1[0], p1[1]);
+  ctx.lineTo(p2[0], p2[1]);
+  ctx.lineTo(p3[0], p3[1]);
   ctx.fillStyle = color;
   ctx.fill();
-  ctx.translate(-centerX,-centerY);
+  ctx.translate(-centerX, -centerY);
   ctx.restore();
-}
+};
+
+const isoTriangle = (
+  ctx: CanvasRenderingContext2D,
+  apexX: number,
+  apexY: number,
+  height: number,
+  length: number,
+  color: string,
+  isFlip: boolean = false
+) => {
+  const points = [
+    { x: apexX, y: apexY },
+    { x: apexX + length / 2, y: apexY + height },
+    { x: apexX - length / 2, y: apexY + height },
+  ];
+
+  ctx.save();
+  ctx.translate(apexX, apexY);
+
+  if (isFlip) {
+    ctx.scale(1, -1);
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  ctx.lineTo(points[1].x, points[1].y);
+  ctx.lineTo(points[2].x, points[2].y);
+
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  ctx.translate(apexX, apexY);
+};
