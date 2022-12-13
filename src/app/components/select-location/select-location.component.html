@@ -1,0 +1,3 @@
+<select #selectedLocation (change)="select.emit(selectedLocation.value)">
+    <option *ngFor="let location of locations" [value]="location">{{ location }}</option>
+</select>

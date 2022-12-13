@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 import { LocationReading } from '../models/locationreading';
 import { SummaryReading } from '../models/stats/SummaryReading';
 import { WeatherStats } from '../models/stats/weatherstats';
+import { Location } from '../models/location';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +48,10 @@ export class ApiService {
     return this.http.get<WeatherStats>(url)
   }
 
+  public getLocations(): Observable<Location[]> {
+    const url = 'https://kimharald.com/api/weather/locations';
+    return this.http.get<Location[]>(url);
+  }
   
   
 }
