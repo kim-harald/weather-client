@@ -97,6 +97,7 @@ export class AppComponent implements OnInit {
     return this._stats24Hr;
   }
 
+  //dd
   private _stats3Month: WeatherStats = {} as WeatherStats;
   public get Stats3Month(): WeatherStats {
     return this._stats3Month;
