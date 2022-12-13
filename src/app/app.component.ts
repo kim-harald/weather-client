@@ -118,10 +118,12 @@ export class AppComponent implements OnInit {
     
   }
 
+  // init
   public ngOnInit(): void {
     this.isMobile = this.deviceService.isMobile();
     this.init();
   }
+
 
   public init(location:string | undefined = undefined) {
     if (location) {
