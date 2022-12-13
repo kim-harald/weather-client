@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient} from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { LocationReading } from '../models/locationreading';
 import { SummaryReading } from '../models/stats/SummaryReading';
 import { WeatherStats } from '../models/stats/weatherstats';
@@ -49,8 +49,10 @@ export class ApiService {
   }
 
   public getLocations(): Observable<Location[]> {
+    const locations:Location[] = [ { id:1,name:'gimel'},{id:2,name:'dalet'} ]
     const url = 'https://kimharald.com/api/weather/locations';
-    return this.http.get<Location[]>(url);
+    // return this.http.get<Location[]>(url);
+    return of(locations);
   }
   
   

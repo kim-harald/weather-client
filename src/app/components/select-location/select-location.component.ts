@@ -15,4 +15,8 @@ export class SelectLocationComponent implements OnInit {
   public select: EventEmitter<string> = new EventEmitter<string>();
 
   ngOnInit(): void {}
+
+  public change(location:string):void {
+    this.select.emit(location);
+  }
 }

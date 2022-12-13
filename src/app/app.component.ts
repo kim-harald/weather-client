@@ -19,7 +19,6 @@ import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/stats/SummaryReading';
 import { WeatherStats } from './models/stats/weatherstats';
-import { Location } from './models/location';
 import { ApiService } from './services/api.service';
 
 const k_Hours = 4;
@@ -116,11 +115,19 @@ export class AppComponent implements OnInit {
     private readonly mqttService: MqttService,
     private readonly deviceService: DeviceDetectorService
   ) {
-    this.setupReadings();
+    
   }
 
   public ngOnInit(): void {
     this.isMobile = this.deviceService.isMobile();
+    this.init();
+  }
+
+  public init(location:string | undefined = undefined) {
+    if (location) {
+      this.location = location;
+    }
+    this.setupReadings();
     this.setupReadingListener();
     this.setHourlySummaries();
     this.setDailySummaries();
@@ -239,10 +246,10 @@ export class AppComponent implements OnInit {
 
   private setupReadingListener() {
     this.mqttService
-      .observe(`${location}/sensor/#`)
+      .observe(`${this.location}/sensor/#`)
       .subscribe((mqttMessage) => {
         const readingType = mqttMessage.topic.replace(
-          `${location}/sensor/`,
+          `${this.location}/sensor/`,
           ''
         ) as ReadingType;
         const value = Number(mqttMessage.payload.toString());
@@ -347,7 +354,7 @@ export class AppComponent implements OnInit {
   }
 
   private setLocations():void {
-    this.apiService.getLocations().subscribe((locations:Location[])=> {
+    this.apiService.getLocations().subscribe(locations=> {
       this.locations = locations.map(s => s.name);
     });
   }

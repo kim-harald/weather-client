@@ -5,7 +5,7 @@
 <app-weather-gauge [units]="'hPa'" [min]="800" [max]="1100" [color]="'rgba(200,200,0,0.4)'" [value]="pressure"
   [delta]="trendPressure" (click)="handleClick('pressure')">
 </app-weather-gauge>
-<app-weather-gauge [units]="'%'" [min]="0" [max]="100" [color]="'rgba(50,50,200,0.4)'" [value]="humidity"
+<app-weather-gauge *ngIf="humidity > 0" [units]="'%'" [min]="0" [max]="100" [color]="'rgba(50,50,200,0.4)'" [value]="humidity"
   [delta]="trendHumidity" (click)="handleClick('humidity')">
 </app-weather-gauge>
 
@@ -14,7 +14,7 @@
   <app-stats class="container" [mode]="mode" [stats]="Stats3Month" title="Siste 3 månedene"></app-stats>
   <app-stats class="container" [mode]="mode" [stats]="Stats24Hr" title="Siste 24 timer"></app-stats>
 </div>
-<app-select-location [locations]="locations"></app-select-location>
+<app-select-location [locations]="locations" (select)="init($event)"></app-select-location>
 <div *ngIf="isReady && !isMobile" class="chart-section">
   <div class="chart-container">
     <app-weather-chart [class]="mode === 'temperature' ? 'visible' : 'hidden'" title="" [data]="DataRows['temperature']"
