@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Location } from '../../models/location';
 
 @Component({
   selector: 'app-select-location',
@@ -9,14 +10,26 @@ export class SelectLocationComponent implements OnInit {
   constructor() {}
 
   @Input()
-  public locations: string[] = [];
+  public locations: Location[] = [];
+
+  @Input()
+  public location:string = '';
 
   @Output()
-  public select: EventEmitter<string> = new EventEmitter<string>();
+  public locationChange: EventEmitter<string> = new EventEmitter<string>();
 
-  ngOnInit(): void {}
+  public isSelected(location:string):string {
+    return location == this.location ? 'selected' :'';
+  }
+
+  ngOnInit(): void {
+    if (this.locations && this.locations.length > 0) {
+      this.location = this.locations[0].name;
+    }
+  }
 
   public change(location:string):void {
-    this.select.emit(location);
+    this.location = location;
+    this.locationChange.emit(location);
   }
 }

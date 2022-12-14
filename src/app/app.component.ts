@@ -20,6 +20,7 @@ import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/stats/SummaryReading';
 import { WeatherStats } from './models/stats/weatherstats';
 import { ApiService } from './services/api.service';
+import { Location } from './models/location';
 
 const k_Hours = 4;
 const k_Samples = 360 * k_Hours;
@@ -52,9 +53,8 @@ export class AppComponent implements OnInit {
   public colors: string[] = ['red'];
   public columns: string[] = ['Time', 'Temperature'];
 
-  public locations:string[] = [];
+  public locations:Location[] = [];
   public location:string = 'gimel';
-
 
   private _sensorReadings: Record<string, number[]> = {};
   public get sensorReadings(): Record<string, number[]> {
@@ -358,7 +358,7 @@ export class AppComponent implements OnInit {
 
   private setLocations():void {
     this.apiService.getLocations().subscribe(locations=> {
-      this.locations = locations.map(s => s.name);
+      this.locations = locations;
     });
   }
 }

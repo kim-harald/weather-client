@@ -1,21 +1,18 @@
-
 <div class="battery-container">
     <div [ngClass]="charging()"></div>
-    <div *ngIf="BatteryPercentage > 75" class="segment" [ngClass]="getColor(BatteryPercentage)"></div>
-    <div *ngIf="BatteryPercentage > 50" class="segment" [ngClass]="getColor(BatteryPercentage)"></div>
-    <div *ngIf="BatteryPercentage > 25" class="segment" [ngClass]="getColor(BatteryPercentage)"></div>
-    <div *ngIf="BatteryPercentage > 0" class="segment" [ngClass]="getColor(BatteryPercentage)"></div>
-    
+    <div class="battery-level">
+        <div *ngIf="BatteryPercentage > 75" class="segment" [ngClass]="getColor(BatteryPercentage)"></div>
+        <div *ngIf="BatteryPercentage > 50" class="segment" [ngClass]="getColor(BatteryPercentage)"></div>
+        <div *ngIf="BatteryPercentage > 25" class="segment" [ngClass]="getColor(BatteryPercentage)"></div>
+        <div *ngIf="BatteryPercentage > 0" class="segment" [ngClass]="getColor(BatteryPercentage)"></div>
+    </div>
     <div>
         {{BatteryPercentage}}%
     </div>
     <div>
         {{status.voltage | number : '1.2-2'}}V
     </div>
-    <div *ngIf="isOnline" class="green">Online
-
-    </div>
-    <div *ngIf="!isOnline" class="red">Offline
-
-    </div>
+    <div *ngIf="isOnline" class="green">Online</div>
+    <div *ngIf="!isOnline" class="red">Offline</div>
+    <div class="device">{{ device }}</div>
 </div>

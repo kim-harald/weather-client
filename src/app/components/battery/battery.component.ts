@@ -13,14 +13,17 @@ const BATTERY_TOPIC = 'battery';
 })
 export class BatteryComponent implements OnInit, OnDestroy {
 
-  private _status: ISmartUPSStatus;
+  private _status: Record<string,ISmartUPSStatus> = {};
+  private _device:string = '';
   private _isOnline = true;
   private _watchdog = 3;
   private _mqttStatus?:MqttConnectionState
   private _subscription?: Subscription;
 
   public get status(): ISmartUPSStatus {
-    return this._status;
+    const topic = `${this.device}/${BATTERY_TOPIC}`;
+      
+    return this._status[getTopic(this.device)] ?? { percentage:0,status:[false,false,false],ts:0,voltage:0};
   }
 
   public get isOnline(): boolean {
@@ -28,42 +31,57 @@ export class BatteryComponent implements OnInit, OnDestroy {
   }
 
   @Input()
-  public device: string = '';
+  public set device(v:string) {
+    this._device = v;
+    this.unsubscribe();
+    this.subscribe();
+  }
 
-  constructor(private readonly mqttService: MqttService, private readonly storageService:StorageService) {
-    this._status = {
+  public get device(): string {
+    return this._device;
+  }
+
+  constructor(private readonly mqttService: MqttService) {
+    this._status[getTopic(this.device)] = {
       percentage:0,
       status:[],
       ts: new Date().valueOf(),
       voltage:0
     };
   }
-  ngOnDestroy(): void {
+
+  private unsubscribe():void {
     if (this._subscription) {
       this._subscription.unsubscribe();
     }
   }
 
-  public get BatteryPercentage(): number {
-    return this._status.percentage
-  }
-
-  ngOnInit(): void {
-    const topic = `${this.device}/${BATTERY_TOPIC}`;
+  public subscribe():void {
+    const topic = getTopic(this.device);
     this.subscribeToTopic(topic);
-    this._status = this.storageService.get(topic);
-    this._status.ts = new Date().valueOf();
+    this.status.ts = new Date().valueOf();
     this.setWatchdog();
     this.mqttService.state.subscribe(state => {
       this._mqttStatus = state;
     });
   }
 
+  ngOnDestroy(): void {
+    this.unsubscribe();
+  }
+
+  public get BatteryPercentage(): number {
+    return this.status.percentage
+  }
+
+  ngOnInit(): void {
+    this.subscribe();
+  }
+
   private subscribeToTopic(topic:string) {
     this._subscription = this.mqttService.observe(topic).subscribe({
       next: (data: IMqttMessage) => {
-        this._status = JSON.parse(data.payload.toString());
-        this.storageService.set(topic,this._status);
+        this._status[data.topic] = JSON.parse(data.payload.toString());
       },
       error: err => {
         console.error(err);
@@ -86,12 +104,12 @@ export class BatteryComponent implements OnInit, OnDestroy {
   }
   
   public charging() {
-    return (this._status?.status[2]) ? 'charging' : '';
+    return (this.status.status[2]) ? 'charging' : '';
   }
 
   private setWatchdog():void {
     setInterval(()=> {
-      const t = this._status.ts - new Date().valueOf() + 10000;
+      const t = this._status[getTopic(this.device)].ts - new Date().valueOf() + 10000;
       if (t < 0) {
         this._watchdog -= 1;
       } else {
@@ -102,4 +120,8 @@ export class BatteryComponent implements OnInit, OnDestroy {
     },10000);
   }
 
+}
+
+const getTopic = (device:string) => {
+  return `${device}/${BATTERY_TOPIC}`; 
 }

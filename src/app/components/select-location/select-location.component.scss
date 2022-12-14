@@ -1,0 +1,31 @@
+@import '../../../assets/variables.scss';
+
+.item:hover {
+    cursor: pointer;
+    background-color: $hover;
+    border-radius: 4px;
+}
+
+.selected {
+    background-color: $select;
+}
+
+.selected:hover {
+    background-color: transparentize($select, $amount: 0.1);
+}
+
+.item {
+    display: inline-block;
+    width: 5rem;
+    text-align: center;
+    margin:2px;
+}
+
+.label {
+    border-radius: 4px;
+    color:aliceblue;
+}
+
+// .label:hover {
+//     background-color: $hover;
+// }

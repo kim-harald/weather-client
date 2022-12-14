@@ -1,4 +1,4 @@
-<app-battery device="gimel"></app-battery>
+<app-battery [device]="location"></app-battery>
 <app-weather-gauge [units]="'C'" [min]="-40" [max]="40" [color]="'rgba(200,50,50,0.4)'" [value]="temperature"
   [delta]="trendTemperature" (click)="handleClick('temperature')">
 </app-weather-gauge>
@@ -14,7 +14,7 @@
   <app-stats class="container" [mode]="mode" [stats]="Stats3Month" title="Siste 3 månedene"></app-stats>
   <app-stats class="container" [mode]="mode" [stats]="Stats24Hr" title="Siste 24 timer"></app-stats>
 </div>
-<app-select-location [locations]="locations" (select)="init($event)"></app-select-location>
+<app-select-location [locations]="locations" [(location)]="location" (locationChange)="init($event)"></app-select-location>
 <div *ngIf="isReady && !isMobile" class="chart-section">
   <div class="chart-container">
     <app-weather-chart [class]="mode === 'temperature' ? 'visible' : 'hidden'" title="" [data]="DataRows['temperature']"
