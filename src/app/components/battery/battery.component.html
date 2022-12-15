@@ -10,7 +10,7 @@
         {{BatteryPercentage}}%
     </div>
     <div>
-        {{status.voltage | number : '1.2-2'}}V
+        {{Voltage | number : '1.2-2'}}V
     </div>
     <div *ngIf="isOnline" class="green">Online</div>
     <div *ngIf="!isOnline" class="red">Offline</div>

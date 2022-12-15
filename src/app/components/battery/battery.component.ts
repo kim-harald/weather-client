@@ -74,6 +74,10 @@ export class BatteryComponent implements OnInit, OnDestroy {
     return this.status.percentage
   }
 
+  public get Voltage():number {
+    return this.status.voltage;
+  }
+
   ngOnInit(): void {
     this.subscribe();
   }
@@ -109,7 +113,7 @@ export class BatteryComponent implements OnInit, OnDestroy {
 
   private setWatchdog():void {
     setInterval(()=> {
-      const t = this._status[getTopic(this.device)].ts - new Date().valueOf() + 10000;
+      const t = this.status.ts - new Date().valueOf() + 10000;
       if (t < 0) {
         this._watchdog -= 1;
       } else {
