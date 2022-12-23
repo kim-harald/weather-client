@@ -97,7 +97,6 @@ export class AppComponent implements OnInit {
     return this._stats24Hr;
   }
 
-  //dd
   private _stats3Month: WeatherStats = {} as WeatherStats;
   public get Stats3Month(): WeatherStats {
     return this._stats3Month;
@@ -176,7 +175,7 @@ export class AppComponent implements OnInit {
     this.setAllSummary();
 
     this.mqttService
-      .observe(`${location}/sensor/all`)
+      .observe(`${this.location}/sensor/all`)
       .pipe(
         map((iqttMessage) => {
           return JSON.parse(iqttMessage.payload.toString()) as LocationReading;
