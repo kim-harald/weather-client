@@ -1,0 +1,3 @@
+<div *ngFor="let location of locations" class="item">
+    <div class="label" [class]="isSelected(location.name)" (click)="change(location.name)" >{{ location.description }}</div>
+</div>

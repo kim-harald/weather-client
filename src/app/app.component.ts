@@ -20,8 +20,8 @@ import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/stats/SummaryReading';
 import { WeatherStats } from './models/stats/weatherstats';
 import { ApiService } from './services/api.service';
+import { Location } from './models/location';
 
-const k_LOCATION = 'gimel';
 const k_Hours = 4;
 const k_Samples = 360 * k_Hours;
 
@@ -52,6 +52,9 @@ export class AppComponent implements OnInit {
 
   public colors: string[] = ['red'];
   public columns: string[] = ['Time', 'Temperature'];
+
+  public locations:Location[] = [];
+  public location:string = 'gimel';
 
   private _sensorReadings: Record<string, number[]> = {};
   public get sensorReadings(): Record<string, number[]> {
@@ -112,17 +115,28 @@ export class AppComponent implements OnInit {
     private readonly mqttService: MqttService,
     private readonly deviceService: DeviceDetectorService
   ) {
-    this.setupReadings();
+    
   }
 
+  // init
   public ngOnInit(): void {
     this.isMobile = this.deviceService.isMobile();
+    this.init();
+  }
+
+
+  public init(location:string | undefined = undefined) {
+    if (location) {
+      this.location = location;
+    }
+    this.setupReadings();
     this.setupReadingListener();
     this.setHourlySummaries();
     this.setDailySummaries();
     this.set24hrStats(this.mode);
     this.set3MonthStats(this.mode);
     this.setAllStats(this.mode);
+    this.setLocations();
   }
 
   public handleClick(mode: Mode): void {
@@ -133,7 +147,7 @@ export class AppComponent implements OnInit {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - k_Hours);
     this.apiService
-      .getReadings(k_LOCATION, startDate, new Date())
+      .getReadings(this.location, startDate, new Date())
       .pipe(
         map((data) => data.sort((a, b) => a.ts - b.ts)),
         map((data) =>
@@ -161,7 +175,7 @@ export class AppComponent implements OnInit {
     this.setAllSummary();
 
     this.mqttService
-      .observe(`${k_LOCATION}/sensor/all`)
+      .observe(`${this.location}/sensor/all`)
       .pipe(
         map((iqttMessage) => {
           return JSON.parse(iqttMessage.payload.toString()) as LocationReading;
@@ -173,7 +187,7 @@ export class AppComponent implements OnInit {
           this.readings.push({
             ...reading,
             when: when,
-            location: k_LOCATION,
+            location: this.location,
           });
 
           this.readings.sort((a, b) => a.ts - b.ts);
@@ -191,11 +205,12 @@ export class AppComponent implements OnInit {
         this.set24hrStats(this.mode);
         this.set3MonthStats(this.mode);
         this.setAllStats(this.mode);
+        this.setLocations();
       });
   }
 
   private setAllSummary(): void {
-    this.apiService.getSummary(k_LOCATION).subscribe((data) => {
+    this.apiService.getSummary(this.location).subscribe((data) => {
       data.temperature.max = rounded(data.temperature.max - cKelvinOffset, 1);
       data.temperature.min = rounded(data.temperature.min - cKelvinOffset, 1);
       data.temperature.mean = rounded(data.temperature.mean - cKelvinOffset, 1);
@@ -233,10 +248,10 @@ export class AppComponent implements OnInit {
 
   private setupReadingListener() {
     this.mqttService
-      .observe(`${k_LOCATION}/sensor/#`)
+      .observe(`${this.location}/sensor/#`)
       .subscribe((mqttMessage) => {
         const readingType = mqttMessage.topic.replace(
-          `${k_LOCATION}/sensor/`,
+          `${this.location}/sensor/`,
           ''
         ) as ReadingType;
         const value = Number(mqttMessage.payload.toString());
@@ -301,7 +316,7 @@ export class AppComponent implements OnInit {
     startDate.setHours(startDate.getHours() - 48);
 
     this.apiService
-      .getHourly(k_LOCATION, startDate, new Date())
+      .getHourly(this.location, startDate, new Date())
       .subscribe((summaryReadings) => {
         this._hourlyDatarows = convertToDataRows(summaryReadings, 'hour');
       });
@@ -312,7 +327,7 @@ export class AppComponent implements OnInit {
     startDate.setDate(startDate.getDate() - 60);
 
     this.apiService
-      .getDaily(k_LOCATION, startDate, new Date())
+      .getDaily(this.location, startDate, new Date())
       .subscribe((summaryReadings) => {
         this._dailyDatarows = convertToDataRows(summaryReadings, 'day');
       });
@@ -321,7 +336,7 @@ export class AppComponent implements OnInit {
   private set24hrStats(type: string): void {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 24);
-    this.apiService.getStats(k_LOCATION, startDate, new Date()).subscribe(data => {
+    this.apiService.getStats(this.location, startDate, new Date()).subscribe(data => {
       this._stats24Hr = normaliseWeatherStats(data);
     });
   }
@@ -329,14 +344,20 @@ export class AppComponent implements OnInit {
   private set3MonthStats(type: string): void {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 3);
-    this.apiService.getStats(k_LOCATION, startDate, new Date()).subscribe(data => {
+    this.apiService.getStats(this.location, startDate, new Date()).subscribe(data => {
       this._stats3Month = normaliseWeatherStats(data);
     });
   }
 
   private setAllStats(type: string): void {
-    this.apiService.getAllStats(k_LOCATION).subscribe(data => {
+    this.apiService.getAllStats(this.location).subscribe(data => {
       this._statsAll = normaliseWeatherStats(data);
+    });
+  }
+
+  private setLocations():void {
+    this.apiService.getLocations().subscribe(locations=> {
+      this.locations = locations;
     });
   }
 }

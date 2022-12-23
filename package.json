@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "build:hub": "ng build --configuration production",
-    "postbuild:hub": "rm /home/kim/kimharald.no/home/profile/www/weather/* && cp ./dist/. /home/kim/kimharald.no/home/profile/www/weather -r"
+    "postbuild:hub": "rm -r /home/kim/kimharald.no/home/profile/www/weather/* && cp ./dist/. /home/kim/kimharald.no/home/profile/www/weather -r"
   },
   "private": true,
   "dependencies": {
