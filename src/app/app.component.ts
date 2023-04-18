@@ -53,8 +53,8 @@ export class AppComponent implements OnInit {
   public colors: string[] = ['red'];
   public columns: string[] = ['Time', 'Temperature'];
 
-  public locations:Location[] = [];
-  public location:string = 'gimel';
+  public locations: Location[] = [];
+  public location: string = 'gimel';
 
   private _sensorReadings: Record<string, number[]> = {};
   public get sensorReadings(): Record<string, number[]> {
@@ -116,7 +116,7 @@ export class AppComponent implements OnInit {
     private readonly mqttService: MqttService,
     private readonly deviceService: DeviceDetectorService
   ) {
-    
+
   }
 
   // init
@@ -126,7 +126,7 @@ export class AppComponent implements OnInit {
   }
 
 
-  public init(location:string | undefined = undefined) {
+  public init(location: string | undefined = undefined) {
     if (location) {
       this.location = location;
     }
@@ -166,7 +166,7 @@ export class AppComponent implements OnInit {
         const lastReading = data[data.length - 1];
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
         this.pressure = rounded(lastReading.pressure / 100, 0);
-        this.humidity = lastReading.humidity;
+        this.humidity = rounded(lastReading.humidity, 0);
         this._sensorReadings = buildSamples(data, k_Samples);
         this.setRange();
         this.readings = data;
@@ -176,7 +176,7 @@ export class AppComponent implements OnInit {
     this.setAllSummary();
 
     this.mqttService
-      .observe(`${location}/sensor/all`)
+      .observe(`${this.location}/sensor/all`)
       .pipe(
         map((iqttMessage) => {
           return JSON.parse(iqttMessage.payload.toString()) as LocationReading;
@@ -290,6 +290,7 @@ export class AppComponent implements OnInit {
               ).b,
               3
             );
+            this.pressure = rounded(value / 100, 0);
             return;
           case 'humidity':
             this._sensorReadings['humidity'] = rotate(
@@ -304,9 +305,9 @@ export class AppComponent implements OnInit {
                   return { x: index, y: o };
                 })
               ).b,
-              3
+              0
             );
-            this.humidity = value;
+            this.humidity = rounded(value, 0);
             return;
         }
       });
@@ -356,8 +357,8 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private setLocations():void {
-    this.apiService.getLocations().subscribe(locations=> {
+  private setLocations(): void {
+    this.apiService.getLocations().subscribe(locations => {
       this.locations = locations;
     });
   }

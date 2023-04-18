@@ -49,7 +49,7 @@ export class ApiService {
   }
 
   public getLocations(): Observable<Location[]> {
-    const locations:Location[] = [ { id:1,name:'gimel',description:'Dekk'},{id:2,name:'dalet', description:'Stue'} ]
+    const locations:Location[] = [ { id:1,name:'gimel',description:'Ute'},{id:2,name:'dalet', description:'Inne'} ]
     const url = 'https://kimharald.com/api/weather/locations';
     // return this.http.get<Location[]>(url);
     return of(locations);
