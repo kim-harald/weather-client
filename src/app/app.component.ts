@@ -23,7 +23,7 @@ import { ApiService } from './services/api.service';
 import { Location } from './models/location';
 
 const k_Hours = 4;
-const k_Samples = 360 * k_Hours;
+const k_Samples = 360;
 
 @Component({
   selector: 'app-root',
@@ -32,8 +32,6 @@ const k_Samples = 360 * k_Hours;
 })
 export class AppComponent implements OnInit {
   public readings: ReadingDisplay[] = [];
-  // public hourlySummaries: SummaryReading[] = [];
-  // public dailySummaries: SummaryReading[] = [];
   public allSummary: SummaryReading = {} as SummaryReading;
   public mode: Mode = 'temperature';
 
@@ -97,7 +95,6 @@ export class AppComponent implements OnInit {
     return this._stats24Hr;
   }
 
-  //dd
   private _stats3Month: WeatherStats = {} as WeatherStats;
   public get Stats3Month(): WeatherStats {
     return this._stats3Month;
@@ -162,7 +159,78 @@ export class AppComponent implements OnInit {
         )
       )
       .subscribe((data) => {
-        this._datarows = convertToDataRows(data, '5min');
+        this._datarows = convertToDataRows(data,this.location, '5min');
+        const lastReading = data[data.length - 1];
+        if (lastReading) {
+          this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
+          this.pressure = rounded(lastReading.pressure / 100, 0);
+          this.humidity = lastReading.humidity;
+          this._sensorReadings = buildSamples(data, k_Samples);
+          this.setRange();
+          this.readings = data;
+        }
+        
+        this.isReady = true;
+      });
+
+    this.setAllSummary();
+
+    this.mqttService
+      .observe(`+/sensor/all`)
+      .pipe(
+        map((iqttMessage) => {
+          const location = iqttMessage.topic.split('/')[0];
+          const reading = JSON.parse(iqttMessage.payload.toString()) as LocationReading;
+          reading.location = location;
+          return reading;
+        })
+      )
+      .subscribe((reading) => {
+        if (!this.readings.find((f) => f.id === reading.id)) {
+          const when = new Date(reading.ts);
+          this.readings.push({
+            ...reading,
+            when: when
+          });
+
+          this.readings.sort((a, b) => a.ts - b.ts);
+          const start = new Date();
+          start.setHours(start.getHours() - k_Hours);
+          this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
+          this._datarows = convertToDataRows(this.readings, this.location, '5min');
+          this.setRange();
+        }
+
+        this.setAllSummary();
+        this.setHourlySummaries();
+        this.setDailySummaries();
+
+        this.set24hrStats(this.mode);
+        this.set3MonthStats(this.mode);
+        this.setAllStats(this.mode);
+        this.setLocations();
+      });
+  }
+
+  private setupReadings_old(): void {
+    const startDate = new Date();
+    startDate.setHours(startDate.getHours() - k_Hours);
+    this.apiService
+      .getReadings(this.location, startDate, new Date())
+      .pipe(
+        map((data) => data.sort((a, b) => a.ts - b.ts)),
+        map((data) =>
+          data.map((item) => {
+            return {
+              ...item,
+              ts: Number(item.ts),
+              when: new Date(Number(item.ts)),
+            } as ReadingDisplay;
+          })
+        )
+      )
+      .subscribe((data) => {
+        this._datarows = convertToDataRows(data,this.location, '5min');
         const lastReading = data[data.length - 1];
         this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
         this.pressure = rounded(lastReading.pressure / 100, 0);
@@ -195,7 +263,7 @@ export class AppComponent implements OnInit {
           const start = new Date();
           start.setHours(start.getHours() - k_Hours);
           this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
-          this._datarows = convertToDataRows(this.readings, '5min');
+          this._datarows = convertToDataRows(this.readings, this.location, '5min');
           this.setRange();
         }
 
@@ -320,7 +388,7 @@ export class AppComponent implements OnInit {
     this.apiService
       .getHourly(this.location, startDate, new Date())
       .subscribe((summaryReadings) => {
-        this._hourlyDatarows = convertToDataRows(summaryReadings, 'hour');
+        this._hourlyDatarows = convertToDataRows(summaryReadings,this.location, 'hour');
       });
   }
 
@@ -331,7 +399,7 @@ export class AppComponent implements OnInit {
     this.apiService
       .getDaily(this.location, startDate, new Date())
       .subscribe((summaryReadings) => {
-        this._dailyDatarows = convertToDataRows(summaryReadings, 'day');
+        this._dailyDatarows = convertToDataRows(summaryReadings, this.location, 'day');
       });
   }
 
@@ -369,6 +437,7 @@ const rotate = (
   value: number,
   limit: number = 30
 ): number[] => {
+  values ??= [];
   values.push(value);
   if (values.length > limit) {
     values.splice(0, 1);
@@ -435,7 +504,8 @@ const getRange = (
 };
 
 const convertToDataRows = (
-  items: Reading[] | SummaryReading[],
+  data: ReadingDisplay[] | SummaryReading[],
+  location:string,
   summaryType: SummaryType
 ): Record<Mode, DataRow[]> => {
   const result: Record<Mode, DataRow[]> = {
@@ -444,9 +514,12 @@ const convertToDataRows = (
     pressure: [],
   };
 
+  const items = summaryType === '5min' ? (data as ReadingDisplay[]).filter(item => item.location === location) : data;
+
   Modes.forEach((s) => {
     const mode = s as Mode;
-    const values = items.map((item) => {
+    const values = items
+      .map((item:any) => {
       switch (summaryType) {
         case '5min':
           return {
