@@ -64,6 +64,13 @@ export const mean = (array: number[]): number => {
 };
 
 export const normaliseReading = (reading: Reading): Reading => {
+  reading ??= {
+    humidity:0,
+    temperature:cKelvinOffset,
+    pressure:0,
+    ts:0,
+    id:''
+  } as Reading;
   const r1 = normalise(
     reading.temperature ?? 0,
     reading.pressure ?? 0,
@@ -83,9 +90,9 @@ export const normalise = (
   humidity: number
 ): { temperature: number; pressure: number; humidity: number } => {
   return {
-    temperature: temperature - cKelvinOffset,
-    pressure: pressure / 100,
-    humidity: humidity,
+    temperature: (temperature ?? cKelvinOffset) - cKelvinOffset,
+    pressure: (pressure ?? 0) / 100,
+    humidity: humidity ?? 0,
   };
 };
 
