@@ -3,7 +3,7 @@ import { HttpClient} from '@angular/common/http';
 import { map, Observable, of } from 'rxjs';
 import { LocationReading } from '../models/locationreading';
 import { SummaryReading } from '../models/stats/SummaryReading';
-import { WeatherStats } from '../models/stats/weatherstats';
+import { isWeatherStatsNull, WeatherStats, WeatherStatsEmpty } from '../models/stats/weatherstats';
 import { Location } from '../models/location';
 
 @Injectable({
@@ -40,12 +40,16 @@ export class ApiService {
 
   public getStats(location:string, fromDate:Date, toDate:Date): Observable<WeatherStats> {
     const url = `https://kimharald.com/api/weather/stats/${location}/${fromDate.valueOf()}/${toDate.valueOf()}`;
-    return this.http.get<WeatherStats>(url)
+    return this.http.get<WeatherStats>(url).pipe(
+      map(data => !isWeatherStatsNull(data) ? data : WeatherStatsEmpty  )
+    );
   }
 
   public getAllStats(location:string): Observable<WeatherStats> {
     const url = `https://kimharald.com/api/weather/stats/${location}`;
-    return this.http.get<WeatherStats>(url)
+    return this.http.get<WeatherStats>(url).pipe(
+      map(data => !isWeatherStatsNull(data) ? data : WeatherStatsEmpty  )
+    );
   }
 
   public getLocations(): Observable<Location[]> {

@@ -1,4 +1,5 @@
 import { Reading } from '../models/reading';
+import { ReadingStat } from '../models/stats/ReadingStats';
 import { SummaryReading } from '../models/stats/SummaryReading';
 import { WeatherStats } from '../models/stats/weatherstats';
 import './string.extensions';
@@ -159,6 +160,9 @@ export const normaliseSummary = (summaryReading: SummaryReading): SummaryReading
   }
 }
 
+/*
+<param></param>
+*/
 export const normaliseWeatherStats = (weatherStat: WeatherStats): WeatherStats => {
   const maxT = normaliseReading(weatherStat.temperature.max);
   const minT = normaliseReading(weatherStat.temperature.min);

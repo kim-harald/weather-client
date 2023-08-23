@@ -6,6 +6,7 @@ import {
   cKelvinOffset,
   convertDate,
   convertTime,
+  mean,
   normaliseWeatherStats,
   rounded,
   trendline,
@@ -18,9 +19,10 @@ import { Reading } from './models/reading';
 import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/stats/SummaryReading';
-import { WeatherStats } from './models/stats/weatherstats';
+import { WeatherStats, WeatherStatsEmpty } from './models/stats/weatherstats';
 import { ApiService } from './services/api.service';
 import { Location } from './models/location';
+import { DateRange } from './models/daterange';
 
 const k_Hours = 4;
 const k_Samples = 360 * k_Hours;
@@ -32,8 +34,6 @@ const k_Samples = 360 * k_Hours;
 })
 export class AppComponent implements OnInit {
   public readings: ReadingDisplay[] = [];
-  // public hourlySummaries: SummaryReading[] = [];
-  // public dailySummaries: SummaryReading[] = [];
   public allSummary: SummaryReading = {} as SummaryReading;
   public mode: Mode = 'temperature';
 
@@ -97,7 +97,6 @@ export class AppComponent implements OnInit {
     return this._stats24Hr;
   }
 
-  //dd
   private _stats3Month: WeatherStats = {} as WeatherStats;
   public get Stats3Month(): WeatherStats {
     return this._stats3Month;
@@ -125,8 +124,12 @@ export class AppComponent implements OnInit {
     this.init();
   }
 
-
   public init(location: string | undefined = undefined) {
+
+    this._sensorReadings['temperature'] = [];
+    this._sensorReadings['pressure'] = [];
+    this._sensorReadings['humidity'] = [];
+
     if (location) {
       this.location = location;
     }
@@ -162,14 +165,17 @@ export class AppComponent implements OnInit {
         )
       )
       .subscribe((data) => {
-        this._datarows = convertToDataRows(data, '5min');
-        const lastReading = data[data.length - 1];
-        this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
-        this.pressure = rounded(lastReading.pressure / 100, 0);
-        this.humidity = rounded(lastReading.humidity, 0);
-        this._sensorReadings = buildSamples(data, k_Samples);
-        this.setRange();
-        this.readings = data;
+        if (data.length > 0) {
+          this._datarows = convertToDataRows(data, '5min');
+          const lastReading = data[data.length - 1];
+          this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
+          this.pressure = rounded(lastReading.pressure / 100, 0);
+          this.humidity = rounded(lastReading.humidity, 0);
+          this._sensorReadings = buildSamples(data, k_Samples);
+          this.setRange();
+          this.readings = data;
+        }
+
         this.isReady = true;
       });
 
@@ -339,7 +345,7 @@ export class AppComponent implements OnInit {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 24);
     this.apiService.getStats(this.location, startDate, new Date()).subscribe(data => {
-      this._stats24Hr = normaliseWeatherStats(data);
+      this._stats24Hr = data;
     });
   }
 
@@ -478,5 +484,7 @@ const convertToDataRows = (
 
   return result;
 };
+
+
 
 type SummaryType = '5min' | 'hour' | 'day';
