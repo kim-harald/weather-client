@@ -12,7 +12,5 @@
     <div>
         {{Voltage | number : '1.2-2'}}V
     </div>
-    <div *ngIf="isOnline" class="green">Online</div>
-    <div *ngIf="!isOnline" class="red">Offline</div>
-    <div class="device">{{ device }}</div>
+    <div class="device" [ngClass]="isOnline ? 'green':'red'">{{ device }}</div>
 </div>
