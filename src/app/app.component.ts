@@ -6,6 +6,7 @@ import {
   cKelvinOffset,
   convertDate,
   convertTime,
+  mean,
   normaliseWeatherStats,
   rounded,
   trendline,
@@ -18,9 +19,10 @@ import { Reading } from './models/reading';
 import { ReadingDisplay } from './models/readingdisplay';
 import { ReadingType } from './models/readingtype';
 import { SummaryReading } from './models/stats/SummaryReading';
-import { WeatherStats } from './models/stats/weatherstats';
+import { WeatherStats, WeatherStatsEmpty } from './models/stats/weatherstats';
 import { ApiService } from './services/api.service';
 import { Location } from './models/location';
+import { DateRange } from './models/daterange';
 
 const k_Hours = 4;
 const k_Samples = 360;
@@ -122,8 +124,12 @@ export class AppComponent implements OnInit {
     this.init();
   }
 
-
   public init(location: string | undefined = undefined) {
+
+    this._sensorReadings['temperature'] = [];
+    this._sensorReadings['pressure'] = [];
+    this._sensorReadings['humidity'] = [];
+
     if (location) {
       this.location = location;
     }
@@ -341,7 +347,7 @@ export class AppComponent implements OnInit {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 24);
     this.apiService.getStats(this.location, startDate, new Date()).subscribe(data => {
-      this._stats24Hr = normaliseWeatherStats(data);
+      this._stats24Hr = data;
     });
   }
 
@@ -485,5 +491,7 @@ const convertToDataRows = (
 
   return result;
 };
+
+
 
 type SummaryType = '5min' | 'hour' | 'day';
