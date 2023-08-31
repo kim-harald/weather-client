@@ -11,7 +11,7 @@
 
 <div>
   <app-stats class="container" [mode]="mode" [stats]="StatsAll" title="Alle"></app-stats>
-  <app-stats class="container" [mode]="mode" [stats]="Stats3Month" title="Siste 3 månedene"></app-stats>
+  <app-stats class="container" [mode]="mode" [stats]="Stats3Month" title="Siste 3 månede"></app-stats>
   <app-stats class="container" [mode]="mode" [stats]="Stats24Hr" title="Siste 24 timer"></app-stats>
 </div>
 <app-select-location [locations]="locations" [(location)]="location" (locationChange)="init($event)"></app-select-location>
