@@ -15,7 +15,6 @@ import { DataRow } from './models/datarow';
 import { Mode, Modes } from './models/mode';
 import { ReadingType } from './models/readingtype';
 import { LocationsService, Reading, ReadingsService, StatsService, SummaryReading, SummaryService, WeatherStats, Location } from './openapi';
-import { ReadingDisplay } from './models/readingdisplay';
 
 const k_Hours = 4;
 const k_Samples = 360;
@@ -441,7 +440,7 @@ const convertToDataRows = (
     pressure: [],
   };
 
-  const items = summaryType === '5min' ? (data as ReadingDisplay[]).filter(item => item.location === location) : data;
+  const items = summaryType === '5min' ? (data as Reading[]).filter(item => item.location === location) : data;
 
   Modes.forEach((s) => {
     const mode = s as Mode;
