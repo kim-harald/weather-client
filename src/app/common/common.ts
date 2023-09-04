@@ -1,7 +1,4 @@
-import { Reading } from '../models/reading';
-import { ReadingStat } from '../models/stats/ReadingStats';
-import { SummaryReading } from '../models/stats/SummaryReading';
-import { WeatherStats } from '../models/stats/weatherstats';
+import { Reading, SummaryReading, WeatherStats } from '../openapi';
 import './string.extensions';
 
 export const cKelvinOffset = 273.15;

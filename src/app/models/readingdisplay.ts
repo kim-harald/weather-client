@@ -1,5 +1,5 @@
-import { LocationReading } from './locationreading';
+import { Reading } from "../openapi";
 
-export type ReadingDisplay = LocationReading & {
-  when: Date;
+export type ReadingDisplay = Reading & {
+  when: Date | string;
 };
