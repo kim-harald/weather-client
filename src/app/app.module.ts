@@ -13,6 +13,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { WeatherGaugeComponent } from './components/weather-gauge/weather-gauge.component';
 import { StatsComponent } from './components/stats/stats.component';
 import { SelectLocationComponent } from './components/select-location/select-location.component';
+import { HourlySummaryComponent } from './components/hourly-summary/hourly-summary.component';
 
 const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: env.mqtt.server,
@@ -26,7 +27,7 @@ const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   declarations: [
     AppComponent,
     RemoveCommaPipe, 
-    BatteryComponent, WeatherChartComponent, WeatherGaugeComponent, StatsComponent, SelectLocationComponent
+    BatteryComponent, WeatherChartComponent, WeatherGaugeComponent, StatsComponent, SelectLocationComponent, HourlySummaryComponent
   ],
   imports: [
     BrowserModule,
