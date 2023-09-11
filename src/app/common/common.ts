@@ -1,6 +1,9 @@
 import { Subscription } from 'rxjs';
 import { Reading, SummaryReading, WeatherStats } from '../openapi';
 import './string.extensions';
+import { Mode, Modes } from '../models/mode';
+import { DataRow } from '../models/datarow';
+import { SummaryType } from '../models/SummaryType';
 
 export const cKelvinOffset = 273.15;
 
@@ -64,11 +67,11 @@ export const mean = (array: number[]): number => {
 
 export const normaliseReading = (reading: Reading): Reading => {
   reading ??= {
-    humidity:0,
-    temperature:cKelvinOffset,
-    pressure:0,
-    ts:0,
-    id:''
+    humidity: 0,
+    temperature: cKelvinOffset,
+    pressure: 0,
+    ts: 0,
+    id: '',
   } as Reading;
   const r1 = normalise(
     reading.temperature ?? 0,
@@ -130,83 +133,166 @@ export const convertTime = (ts: number): string => {
   return hh + ':' + mm;
 };
 
-export const convertDate = (ts:number):string => {
+export const convertDate = (ts: number): string => {
   const d = new Date(ts);
   const dd = d.getDate();
-  const mm = d.getMonth()+1;
+  const mm = d.getMonth() + 1;
   const yy = d.getFullYear().toString().slice(2);
 
   return dd + '.' + mm + '.' + yy;
-}
+};
 
-export const normaliseSummary = (summaryReading: SummaryReading): SummaryReading => {
-  const max = normalise(summaryReading.temperature.max, summaryReading.pressure.max, summaryReading.humidity.max);
-  const min = normalise(summaryReading.temperature.min, summaryReading.pressure.min, summaryReading.humidity.min);
-  const mean = normalise(summaryReading.temperature.mean, summaryReading.pressure.mean, summaryReading.humidity.mean);
+export const normaliseSummary = (
+  summaryReading: SummaryReading
+): SummaryReading => {
+  const max = normalise(
+    summaryReading.temperature.max,
+    summaryReading.pressure.max,
+    summaryReading.humidity.max
+  );
+  const min = normalise(
+    summaryReading.temperature.min,
+    summaryReading.pressure.min,
+    summaryReading.humidity.min
+  );
+  const mean = normalise(
+    summaryReading.temperature.mean,
+    summaryReading.pressure.mean,
+    summaryReading.humidity.mean
+  );
 
   return {
-      ...summaryReading,
-      temperature: {
-          max: max.temperature,
-          min: min.temperature,
-          mean: mean.temperature
-      },
-      pressure: {
-          max: max.pressure,
-          min: min.pressure,
-          mean: mean.pressure
-      },
-      humidity: {
-          max: max.humidity,
-          min: min.humidity,
-          mean: mean.humidity
-      }
-
-  }
-}
+    ...summaryReading,
+    temperature: {
+      max: max.temperature,
+      min: min.temperature,
+      mean: mean.temperature,
+    },
+    pressure: {
+      max: max.pressure,
+      min: min.pressure,
+      mean: mean.pressure,
+    },
+    humidity: {
+      max: max.humidity,
+      min: min.humidity,
+      mean: mean.humidity,
+    },
+  };
+};
 
 /*
 <param></param>
 */
-export const normaliseWeatherStats = (weatherStat: WeatherStats): WeatherStats => {
+export const normaliseWeatherStats = (
+  weatherStat: WeatherStats
+): WeatherStats => {
   const maxT = normaliseReading(weatherStat.temperature.max);
   const minT = normaliseReading(weatherStat.temperature.min);
   const maxP = normaliseReading(weatherStat.pressure.max);
   const minP = normaliseReading(weatherStat.pressure.min);
   const maxH = normaliseReading(weatherStat.humidity.max);
   const minH = normaliseReading(weatherStat.humidity.min);
-  const mean = normalise(weatherStat.temperature.mean, weatherStat.pressure.mean, weatherStat.humidity.mean);
-
+  const mean = normalise(
+    weatherStat.temperature.mean,
+    weatherStat.pressure.mean,
+    weatherStat.humidity.mean
+  );
 
   return {
-      ...weatherStat,
-      temperature: {
-          ...weatherStat.temperature,
-          min: minT,
-          max: maxT,
-          mean: mean.temperature
-      },
-      pressure: {
-          ...weatherStat.pressure,
-          min: minP,
-          max: maxP,
-          mean: mean.pressure
-      },
-      humidity: {
-          ...weatherStat.humidity,
-          min: minH,
-          max: maxH,
-          mean: mean.humidity
-      }
+    ...weatherStat,
+    temperature: {
+      ...weatherStat.temperature,
+      min: minT,
+      max: maxT,
+      mean: mean.temperature,
+    },
+    pressure: {
+      ...weatherStat.pressure,
+      min: minP,
+      max: maxP,
+      mean: mean.pressure,
+    },
+    humidity: {
+      ...weatherStat.humidity,
+      min: minH,
+      max: maxH,
+      mean: mean.humidity,
+    },
   };
-}
+};
 
-export const unsubscribeAll = (subscriptions:Array<Subscription | undefined>) => {
-  subscriptions.forEach(subscription => {
+export const unsubscribeAll = (
+  subscriptions: Array<Subscription | undefined>
+) => {
+  subscriptions.forEach((subscription) => {
     if (subscription && !subscription.closed) {
       subscription.unsubscribe();
     }
   });
-}
+};
 
+export const convertToDataRows = (
+  data: Reading[] | SummaryReading[],
+  location: string,
+  summaryType: SummaryType
+): Record<Mode, DataRow[]> => {
+  const result: Record<Mode, DataRow[]> = {
+    temperature: [],
+    humidity: [],
+    pressure: [],
+  };
 
+  if (data.length === 0 ) {
+    return result;
+  }
+  const items =
+    summaryType === '5min'
+      ? (data as Reading[]).filter((item) => item.location === location)
+      : data;
+
+  Modes.forEach((s) => {
+    const mode = s as Mode;
+    const values = items.map((item: any) => {
+      switch (summaryType) {
+        case '5min':
+          return {
+            when: convertTime((item as Reading).ts),
+            value: convertValue(mode, (item as any)[mode]),
+          };
+        case 'hour':
+          return {
+            when: convertTime((item as any).ts),
+            value: [
+              convertValue(mode, (item as any)[mode]?.max ?? 0),
+              convertValue(mode, (item as any)[mode]?.mean ?? 0),
+              convertValue(mode, (item as any)[mode]?.min ?? 0),
+            ],
+          };
+        case 'day':
+          return {
+            when: convertDate((item as any).ts),
+            value: [
+              convertValue(mode, (item as any)[mode]?.max ?? 0),
+              convertValue(mode, (item as any)[mode]?.mean ?? 0),
+              convertValue(mode, (item as any)[mode]?.min ?? 0),
+            ],
+          };
+      }
+    });
+    result[mode] = values;
+  });
+
+  return result;
+};
+
+const convertValue = (mode: Mode, value: number): number => {
+  switch (mode) {
+    case 'humidity':
+      return value;
+    case 'pressure':
+      return rounded(value / 100, 0);
+    case 'temperature':
+      return value !== 0 ? rounded(value - cKelvinOffset, 1) : 0;
+  }
+};

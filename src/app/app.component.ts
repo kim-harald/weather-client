@@ -6,6 +6,7 @@ import {
   cKelvinOffset,
   convertDate,
   convertTime,
+  convertToDataRows,
   normaliseWeatherStats,
   rounded,
   trendline,
@@ -15,6 +16,7 @@ import { DataRow } from './models/datarow';
 import { Mode, Modes } from './models/mode';
 import { ReadingType } from './models/readingtype';
 import { LocationsService, Reading, ReadingsService, StatsService, SummaryReading, SummaryService, WeatherStats, Location } from './openapi';
+import {  } from './common/common';
 
 const k_Hours = 4;
 const k_Samples = 360;
@@ -46,7 +48,7 @@ export class AppComponent implements OnInit {
   public columns: string[] = ['Time', 'Temperature'];
 
   public locations: Location[] = [];
-  public location: string = 'gimel';
+  public location: string = 'dalet';
 
   private _sensorReadings: Record<string, number[]> = {};
   public get sensorReadings(): Record<string, number[]> {
@@ -128,13 +130,13 @@ export class AppComponent implements OnInit {
     if (location) {
       this.location = location;
     }
-    this.setupReadings();
-    this.setupReadingListener();
-    this.setHourlySummaries();
-    this.setDailySummaries();
-    this.set24hrStats(this.mode);
-    this.set3MonthStats(this.mode);
-    this.setAllStats(this.mode);
+    // this.setupReadings();
+    // this.setupReadingListener();
+    // this.setHourlySummaries();
+    // this.setDailySummaries();
+    // this.set24hrStats(this.mode);
+    // this.set3MonthStats(this.mode);
+    // this.setAllStats(this.mode);
     this.setLocations();
   }
 
@@ -405,16 +407,7 @@ const buildSamples = (
   return result;
 };
 
-const convertValue = (mode: Mode, value: number): number => {
-  switch (mode) {
-    case 'humidity':
-      return value;
-    case 'pressure':
-      return rounded(value / 100, 0);
-    case 'temperature':
-      return value !== 0 ? rounded(value - cKelvinOffset, 1) : 0;
-  }
-};
+
 
 const getRange = (
   values: number[],
@@ -429,55 +422,4 @@ const getRange = (
   };
 };
 
-const convertToDataRows = (
-  data: Reading[] | SummaryReading[],
-  location:string,
-  summaryType: SummaryType
-): Record<Mode, DataRow[]> => {
-  const result: Record<Mode, DataRow[]> = {
-    temperature: [],
-    humidity: [],
-    pressure: [],
-  };
 
-  const items = summaryType === '5min' ? (data as Reading[]).filter(item => item.location === location) : data;
-
-  Modes.forEach((s) => {
-    const mode = s as Mode;
-    const values = items
-      .map((item:any) => {
-      switch (summaryType) {
-        case '5min':
-          return {
-            when: convertTime((item as Reading).ts),
-            value: convertValue(mode, (item as any)[mode]),
-          };
-        case 'hour':
-          return {
-            when: convertTime((item as any).ts),
-            value: [
-              convertValue(mode, (item as any)[mode].max),
-              convertValue(mode, (item as any)[mode].mean),
-              convertValue(mode, (item as any)[mode].min),
-            ],
-          };
-        case 'day':
-          return {
-            when: convertDate((item as any).ts),
-            value: [
-              convertValue(mode, (item as any)[mode].max),
-              convertValue(mode, (item as any)[mode].mean),
-              convertValue(mode, (item as any)[mode].min),
-            ],
-          };
-      }
-    });
-    result[mode] = values;
-  });
-
-  return result;
-};
-
-
-
-type SummaryType = '5min' | 'hour' | 'day';

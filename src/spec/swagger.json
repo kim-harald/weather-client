@@ -6,6 +6,23 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"Device": {
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Device name"
+					},
+					"id": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"name",
+					"id"
+				],
+				"type": "object"
+			},
 			"Location": {
 				"properties": {
 					"alitude": {
@@ -23,9 +40,13 @@
 						"format": "double",
 						"description": "Longitude in degrees. Positive for west, negative for east"
 					},
+					"description": {
+						"type": "string",
+						"description": "Description"
+					},
 					"name": {
 						"type": "string",
-						"description": "location name"
+						"description": "Location name"
 					},
 					"id": {
 						"type": "number",
@@ -34,6 +55,7 @@
 					}
 				},
 				"required": [
+					"description",
 					"name",
 					"id"
 				],
@@ -338,7 +360,7 @@
 	},
 	"info": {
 		"title": "weather",
-		"version": "1.1.1",
+		"version": "1.1.2",
 		"description": "Hub Sensor software in typescript and node.js for Raspberry Pi",
 		"license": {
 			"name": "ISC"
@@ -349,6 +371,32 @@
 	},
 	"openapi": "3.0.0",
 	"paths": {
+		"/devices": {
+			"get": {
+				"operationId": "GetAll",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Device"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieves all devices",
+				"tags": [
+					"devices"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
 		"/locations": {
 			"get": {
 				"operationId": "GetLocations",
@@ -575,7 +623,7 @@
 				}
 			}
 		},
-		"/readings/{location}/{topN}": {
+		"/readings/topN/{location}/{topN}": {
 			"get": {
 				"operationId": "GetTopNForLocation",
 				"responses": {
@@ -608,6 +656,43 @@
 							"type": "string"
 						}
 					},
+					{
+						"description": "Number to take",
+						"in": "path",
+						"name": "topN",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/readings/topN/{topN}": {
+			"get": {
+				"operationId": "GetTopN",
+				"responses": {
+					"200": {
+						"description": "Array of Reading",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Reading"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieve first TopN Reading order by descending data (latest first)",
+				"tags": [
+					"readings"
+				],
+				"security": [],
+				"parameters": [
 					{
 						"description": "Number to take",
 						"in": "path",
@@ -896,7 +981,7 @@
 	},
 	"servers": [
 		{
-			"url": "/api/weather"
+			"url": "/"
 		}
 	]
 }

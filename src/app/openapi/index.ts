@@ -9,6 +9,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { DateRange } from './models/DateRange';
 export type { DbStats } from './models/DbStats';
+export type { Device } from './models/Device';
 export type { Location } from './models/Location';
 export type { Payload } from './models/Payload';
 export type { Reading } from './models/Reading';
@@ -19,6 +20,7 @@ export type { SummaryReading } from './models/SummaryReading';
 export type { SummaryReadings } from './models/SummaryReadings';
 export type { WeatherStats } from './models/WeatherStats';
 
+export { DevicesService } from './services/DevicesService';
 export { LocationsService } from './services/LocationsService';
 export { PayloadService } from './services/PayloadService';
 export { ReadingsService } from './services/ReadingsService';

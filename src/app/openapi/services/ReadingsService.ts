@@ -72,9 +72,27 @@ topN: number,
 ): Observable<Array<Reading>> {
         return __request(OpenAPI, this.http, {
             method: 'GET',
-            url: '/readings/{location}/{topN}',
+            url: '/readings/topN/{location}/{topN}',
             path: {
                 'location': location,
+                'topN': topN,
+            },
+        });
+    }
+
+    /**
+     * Retrieve first TopN Reading order by descending data (latest first)
+     * @param topN Number to take
+     * @returns Reading Array of Reading
+     * @throws ApiError
+     */
+    public getTopN(
+topN: number,
+): Observable<Array<Reading>> {
+        return __request(OpenAPI, this.http, {
+            method: 'GET',
+            url: '/readings/topN/{topN}',
+            path: {
                 'topN': topN,
             },
         });

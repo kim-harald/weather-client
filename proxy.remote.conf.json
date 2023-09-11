@@ -5,7 +5,7 @@
     "logLevel": "debug",
     "changeOrigin": true,
     "pathRewrite": {
-      "^/api": "https://kimharald.no/api/weather"
+      "^/api": "https://kimharald.no/api"
     }
   },
   "/remote/api/*": {

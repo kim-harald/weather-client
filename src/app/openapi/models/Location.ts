@@ -17,7 +17,11 @@ export type Location = {
      */
     longitude?: number;
     /**
-     * location name
+     * Description
+     */
+    description: string;
+    /**
+     * Location name
      */
     name: string;
     /**
