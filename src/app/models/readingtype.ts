@@ -1,2 +1,2 @@
 
-export type ReadingType = 'temperature' | 'pressure' | 'humidity' | 'all';
+export type ReadingType = 'temperature' | 'pressure' | 'humidity' | 'all' | 'stats' | 'summary';
