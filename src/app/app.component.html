@@ -10,9 +10,8 @@
   [delta]="trendHumidity" (click)="handleClick('humidity')">
 </app-weather-gauge>
 
+<div></div>
 
 <app-select-location [locations]="locations" [(location)]="location" (locationChange)="init($event)"></app-select-location>
 
-Mode: {{mode}}
-Location: {{location}}
 <hourly-summary [location]="location" [mode]="mode"></hourly-summary>
