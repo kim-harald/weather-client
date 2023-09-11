@@ -1,3 +1,4 @@
+import { Subscription } from 'rxjs';
 import { Reading, SummaryReading, WeatherStats } from '../openapi';
 import './string.extensions';
 
@@ -198,6 +199,14 @@ export const normaliseWeatherStats = (weatherStat: WeatherStats): WeatherStats =
           mean: mean.humidity
       }
   };
+}
+
+export const unsubscribeAll = (subscriptions:Array<Subscription | undefined>) => {
+  subscriptions.forEach(subscription => {
+    if (subscription && !subscription.closed) {
+      subscription.unsubscribe();
+    }
+  });
 }
 
 
