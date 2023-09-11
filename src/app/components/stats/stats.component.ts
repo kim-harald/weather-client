@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { SummaryReading } from 'src/app/models/stats/SummaryReading';
-import { WeatherStats } from 'src/app/models/stats/weatherstats';
+import { WeatherStats } from 'src/app/openapi';
 
 @Component({
   selector: 'app-stats',

@@ -332,7 +332,7 @@ export class AppComponent implements OnInit {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 24);
     this.statsService.getAllStatsDateRange(this.location, startDate.valueOf(), new Date().valueOf()).subscribe(data => {
-      this._stats24Hr = data;
+      this._stats24Hr = normaliseWeatherStats(data);
     });
   }
 

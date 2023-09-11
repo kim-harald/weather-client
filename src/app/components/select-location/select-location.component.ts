@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Location } from '../../models/location';
+import { Location } from 'src/app/openapi/models/Location';
+
 
 @Component({
   selector: 'app-select-location',
