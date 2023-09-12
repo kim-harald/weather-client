@@ -1,0 +1,27 @@
+.chart-container {
+  display: none;
+}
+
+p {
+  color: green;
+}
+
+.chart-section {
+  display: inline-block;
+  height: 1em;
+  position: initial;
+  width: 100%;
+}
+
+.chart-container {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  height: 30em;
+}
+
+app-weather-chart {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

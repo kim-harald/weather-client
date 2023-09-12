@@ -1,6 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MqttService } from 'ngx-mqtt';
 import { Observable, Subject, Subscription, concatMap, map, of } from 'rxjs';
+import { convertToDataRows, unsubscribeAll } from 'src/app/common/common';
 import { kChartOptions } from 'src/app/common/settings';
 import { DataRow } from 'src/app/models/datarow';
 import { Mode } from 'src/app/models/mode';
@@ -11,18 +12,12 @@ import { Reading, ReadingsService } from 'src/app/openapi';
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss']
 })
-export class DetailComponent implements OnInit {
+export class DetailComponent implements OnInit ,OnDestroy {
 
   private _location = '';
-  private _mode = '';
+  private _subscriptions:Array<Subscription> = [];
 
-  private getDetails$:Subscription | undefined;
-
-  public get mode():string {
-    return this._mode;
-  }
-
-  public DetailDataRows:Record<string,DataRow[]> = {
+  public DetailDataRows:Record<Mode,DataRow[]> = {
     temperature:[],
     pressure:[],
     humidity:[]
@@ -34,7 +29,7 @@ export class DetailComponent implements OnInit {
   public locations$:Subject<string> = new Subject<string>();
 
   @Input() 
-  mode$:Subject<string> = new Subject<string>();
+  public mode:string = 'temperature';
 
   public chartOptions = kChartOptions;
 
@@ -44,16 +39,20 @@ export class DetailComponent implements OnInit {
     this.init();
   }
 
+  ngOnDestroy(): void {
+      unsubscribeAll(this._subscriptions);
+  }
+
   private init():void {
-    this.locations$.pipe(
+    this._subscriptions.push(this.locations$.pipe(
       concatMap(location => {
         this._location = location;
         return this.getDetails(location, true);
       }))
-      .subscribe(this.setDetailDataRows);
+      .subscribe(readings => this.DetailDataRows = convertToDataRows(readings,this._location,'5min')));
 
-    this.getDetails$ = this.getDetails(this._location,false)
-      .subscribe(this.setDetailDataRows);
+      this._subscriptions.push(this.getDetails(this._location,false)
+      .subscribe(readings => this.DetailDataRows = convertToDataRows(readings,this._location,'5min')));
   }
 
   private getDetails(location:string, isInit = false):Observable<Reading[]> {
@@ -68,11 +67,12 @@ export class DetailComponent implements OnInit {
       })
     );
   }
+}
 
-  private setDetailDataRows(readings:Reading[]):void {
-    this.DetailDataRows['temperature'] = readings.map(reading => <DataRow>{ when : reading.when, value:reading.temperature});
-    this.DetailDataRows['pressure'] = readings.map(reading => <DataRow>{ when : reading.when, value:reading.pressure});
-    this.DetailDataRows['humidity'] = readings.map(reading => <DataRow>{ when : reading.when, value:reading.humidity});
-  }
-
+const getDetailDataRows = (readings:Reading[]):Record<Mode, DataRow[]> => {
+  return {
+    temperature : readings.map(reading => <DataRow>{ when : reading.when, value:reading.temperature}),
+    pressure : readings.map(reading => <DataRow>{ when : reading.when, value:reading.pressure}),
+    humidity : readings.map(reading => <DataRow>{ when : reading.when, value:reading.humidity})
+  };
 }

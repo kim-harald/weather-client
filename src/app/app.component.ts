@@ -212,8 +212,8 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
 
         this.setAllSummary();
-        this.setHourlySummaries();
-        this.setDailySummaries();
+        // this.setHourlySummaries();
+        // this.setDailySummaries();
 
         this.set24hrStats(this.mode);
         this.set3MonthStats(this.mode);

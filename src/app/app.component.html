@@ -13,5 +13,5 @@
 <div></div>
 
 <app-select-location [locations]="locations" [(location)]="location" (locationChange)="init($event)"></app-select-location>
-
+<app-detail [locations$]="location$" [mode]="mode"></app-detail>
 <hourly-summary [location$]="location$" [mode]="mode"></hourly-summary>
