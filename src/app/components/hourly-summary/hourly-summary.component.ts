@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MqttService } from 'ngx-mqtt';
-import { Observable, Subscription, concatMap, map, of } from 'rxjs';
+import { Observable, Subject, Subscription, concatMap, map, of } from 'rxjs';
 import { convertToDataRows, unsubscribeAll } from 'src/app/common/common';
 import { kChartOptions } from 'src/app/common/settings';
 import { DataRow } from 'src/app/models/datarow';
@@ -13,10 +13,10 @@ import { SummaryReading, SummaryReadings, SummaryService } from 'src/app/openapi
   styleUrls: ['./hourly-summary.component.scss']
 })
 export class HourlySummaryComponent implements OnInit, OnDestroy {
-  private hourSummaries: SummaryReading[] = [];
+  private _location = '';
   
   @Input()
-  public location:string = '';
+  public location$:Subject<string> = new Subject<string>();
 
   @Input()
   public mode:Mode = 'temperature';
@@ -24,6 +24,7 @@ export class HourlySummaryComponent implements OnInit, OnDestroy {
   public chartOptions = kChartOptions;
 
   private getHourlySummary$:Subscription | undefined;
+  private getLocation$:Subscription | undefined;
   
   private _hourlyDatarows: Record<Mode, DataRow[]> = {
     temperature: [],
@@ -39,14 +40,21 @@ export class HourlySummaryComponent implements OnInit, OnDestroy {
 
   
   ngOnInit(): void {
-    this.getHourlySummary$ = this.getHourlySummary(this.location, true).subscribe(result => {
-      this.hourSummaries = result;
-      this._hourlyDatarows = convertToDataRows(result,this.location, 'hour');
+    this.getLocation$ = this.location$.pipe(
+      concatMap(location => {
+        this._location = location;
+        return this.getHourlySummary(location,true)
+      })
+    ).subscribe(result => {
+      this._hourlyDatarows = convertToDataRows(result,this._location, 'hour');
     });
 
-    this.getHourlySummary$ = this.getHourlySummary(this.location,false).subscribe(result => {
-      this.hourSummaries = result;
-      this._hourlyDatarows = convertToDataRows(result,this.location, 'hour');
+    this.getHourlySummary$ = this.getHourlySummary(this._location, true).subscribe(result => {
+      this._hourlyDatarows = convertToDataRows(result,this._location, 'hour');
+    });
+
+    this.getHourlySummary$ = this.getHourlySummary(this._location,false).subscribe(result => {
+      this._hourlyDatarows = convertToDataRows(result,this._location, 'hour');
     });
   }
   
@@ -54,7 +62,7 @@ export class HourlySummaryComponent implements OnInit, OnDestroy {
       unsubscribeAll([this.getHourlySummary$]);
   }
 
-  public getHourlySummary(location:string, isInit = false):Observable<SummaryReading[]> {
+  private getHourlySummary(location:string, isInit = false):Observable<SummaryReading[]> {
     const signal$ = isInit ? of({}) : this.mqttService.observe('summary');
     return signal$.pipe(
       concatMap(()=> {

@@ -1,7 +1,9 @@
+<div class="white">Mode:{{ mode }}</div>
+
 <app-weather-chart
   [class]="mode === 'temperature' ? 'visible' : 'hidden'"
   title=""
-  [data]="HourlyDataRows['temperature']"
+  [data]="DetailDataRows['temperature']"
   [max]="chartOptions['temperature'].max"
   [min]="chartOptions['temperature'].min"
   [colors]="['Orange', 'Red', 'Purple']"
@@ -12,7 +14,7 @@
 <app-weather-chart
   title=""
   [class]="mode === 'pressure' ? 'visible' : 'hidden'"
-  [data]="HourlyDataRows['pressure']"
+  [data]="DetailDataRows['pressure']"
   [max]="chartOptions['pressure'].max"
   [min]="chartOptions['pressure'].min"
   [colors]="['Yellow', 'Green', 'Orange']"
@@ -23,7 +25,7 @@
 <app-weather-chart
   title=""
   [class]="mode === 'humidity' ? 'visible' : 'hidden'"
-  [data]="HourlyDataRows['humidity']"
+  [data]="DetailDataRows['humidity']"
   [max]="chartOptions['humidity'].max"
   [min]="chartOptions['humidity'].min"
   [colors]="chartOptions['humidity'].colors"

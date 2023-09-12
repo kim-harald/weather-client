@@ -15,6 +15,7 @@ import { StatsComponent } from './components/stats/stats.component';
 import { SelectLocationComponent } from './components/select-location/select-location.component';
 import { HourlySummaryComponent } from './components/hourly-summary/hourly-summary.component';
 import { OpenAPI } from './openapi';
+import { DetailComponent } from './components/detail/detail.component';
 
 const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: env.mqtt.server,
@@ -30,7 +31,7 @@ OpenAPI.BASE = '/api/weather';
   declarations: [
     AppComponent,
     RemoveCommaPipe, 
-    BatteryComponent, WeatherChartComponent, WeatherGaugeComponent, StatsComponent, SelectLocationComponent, HourlySummaryComponent
+    BatteryComponent, WeatherChartComponent, WeatherGaugeComponent, StatsComponent, SelectLocationComponent, HourlySummaryComponent, DetailComponent
   ],
   imports: [
     BrowserModule,

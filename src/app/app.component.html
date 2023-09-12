@@ -14,4 +14,4 @@
 
 <app-select-location [locations]="locations" [(location)]="location" (locationChange)="init($event)"></app-select-location>
 
-<hourly-summary [location]="location" [mode]="mode"></hourly-summary>
+<hourly-summary [location$]="location$" [mode]="mode"></hourly-summary>

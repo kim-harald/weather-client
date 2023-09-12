@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { MqttService } from 'ngx-mqtt';
-import { map } from 'rxjs';
+import { Subject, map } from 'rxjs';
 import {
   cKelvinOffset,
   convertDate,
@@ -15,8 +15,17 @@ import { kChartOptions } from './common/settings';
 import { DataRow } from './models/datarow';
 import { Mode, Modes } from './models/mode';
 import { ReadingType } from './models/readingtype';
-import { LocationsService, Reading, ReadingsService, StatsService, SummaryReading, SummaryService, WeatherStats, Location } from './openapi';
-import {  } from './common/common';
+import {
+  LocationsService,
+  Reading,
+  ReadingsService,
+  StatsService,
+  SummaryReading,
+  SummaryService,
+  WeatherStats,
+  Location,
+} from './openapi';
+import {} from './common/common';
 
 const k_Hours = 4;
 const k_Samples = 360;
@@ -26,7 +35,7 @@ const k_Samples = 360;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   public readings: Reading[] = [];
   public allSummary: SummaryReading = {} as SummaryReading;
   public mode: Mode = 'temperature';
@@ -49,6 +58,7 @@ export class AppComponent implements OnInit {
 
   public locations: Location[] = [];
   public location: string = 'dalet';
+  public location$: Subject<string> = new Subject<string>();
 
   private _sensorReadings: Record<string, number[]> = {};
   public get sensorReadings(): Record<string, number[]> {
@@ -111,18 +121,20 @@ export class AppComponent implements OnInit {
     private readonly summaryService: SummaryService,
     private readonly statsService: StatsService,
     private readonly locationService: LocationsService
-  ) {
-
-  }
+  ) {}
 
   // init
   public ngOnInit(): void {
     this.isMobile = this.deviceService.isMobile();
-    this.init();
+    
+  }
+
+  public ngAfterViewInit(): void {
+    this.location$.next(this.location);
+    this.init();  
   }
 
   public init(location: string | undefined = undefined) {
-
     this._sensorReadings['temperature'] = [];
     this._sensorReadings['pressure'] = [];
     this._sensorReadings['humidity'] = [];
@@ -130,6 +142,7 @@ export class AppComponent implements OnInit {
     if (location) {
       this.location = location;
     }
+
     // this.setupReadings();
     // this.setupReadingListener();
     // this.setHourlySummaries();
@@ -137,6 +150,7 @@ export class AppComponent implements OnInit {
     // this.set24hrStats(this.mode);
     // this.set3MonthStats(this.mode);
     // this.setAllStats(this.mode);
+    this.location$.next(this.location);
     this.setLocations();
   }
 
@@ -144,26 +158,27 @@ export class AppComponent implements OnInit {
     this.mode = mode;
   }
 
-  private setupReadings():void {
+  private setupReadings(): void {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - k_Hours);
     this.readingService
       .getReadings(this.location, startDate.valueOf(), new Date().valueOf())
-      .pipe(
-        map((data) => data.sort((a, b) => a.ts - b.ts)),
-      )
+      .pipe(map((data) => data.sort((a, b) => a.ts - b.ts)))
       .subscribe((data) => {
-        this._datarows = convertToDataRows(data,this.location, '5min');
+        this._datarows = convertToDataRows(data, this.location, '5min');
         const lastReading = data[data.length - 1];
         if (lastReading) {
-          this.temperature = rounded(lastReading.temperature - cKelvinOffset, 1);
+          this.temperature = rounded(
+            lastReading.temperature - cKelvinOffset,
+            1
+          );
           this.pressure = rounded(lastReading.pressure / 100, 0);
           this.humidity = lastReading.humidity;
           this._sensorReadings = buildSamples(data, k_Samples);
           this.setRange();
           this.readings = data;
         }
-        
+
         this.isReady = true;
       });
 
@@ -188,7 +203,11 @@ export class AppComponent implements OnInit {
           const start = new Date();
           start.setHours(start.getHours() - k_Hours);
           this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
-          this._datarows = convertToDataRows(this.readings, this.location, '5min');
+          this._datarows = convertToDataRows(
+            this.readings,
+            this.location,
+            '5min'
+          );
           this.setRange();
         }
 
@@ -203,10 +222,10 @@ export class AppComponent implements OnInit {
       });
   }
 
-  private setAllSummary():void {
+  private setAllSummary(): void {
     const start = 1;
     const end = new Date().valueOf();
-    this.summaryService.getTotalSummary(this.location).subscribe(data => {
+    this.summaryService.getTotalSummary(this.location).subscribe((data) => {
       data.temperature.max = rounded(data.temperature.max - cKelvinOffset, 1);
       data.temperature.min = rounded(data.temperature.min - cKelvinOffset, 1);
       data.temperature.mean = rounded(data.temperature.mean - cKelvinOffset, 1);
@@ -219,7 +238,7 @@ export class AppComponent implements OnInit {
       data.humidity.min = rounded(data.humidity.min, 0);
       data.humidity.mean = rounded(data.humidity.mean, 0);
       this.allSummary = data;
-    })
+    });
   }
 
   private setRange(): void {
@@ -313,9 +332,17 @@ export class AppComponent implements OnInit {
     startDate.setHours(startDate.getHours() - 48);
 
     this.summaryService
-      .getHourlySummary(this.location, startDate.valueOf(), new Date().valueOf())
+      .getHourlySummary(
+        this.location,
+        startDate.valueOf(),
+        new Date().valueOf()
+      )
       .subscribe((summaryReadings) => {
-        this._hourlyDatarows = convertToDataRows(summaryReadings.data,this.location, 'hour');
+        this._hourlyDatarows = convertToDataRows(
+          summaryReadings.data,
+          this.location,
+          'hour'
+        );
       });
   }
 
@@ -326,35 +353,53 @@ export class AppComponent implements OnInit {
     this.summaryService
       .getDailySummary(this.location, startDate.valueOf(), new Date().valueOf())
       .subscribe((summaryReadings) => {
-        this._dailyDatarows = convertToDataRows(summaryReadings.data, this.location, 'day');
+        this._dailyDatarows = convertToDataRows(
+          summaryReadings.data,
+          this.location,
+          'day'
+        );
       });
   }
 
   private set24hrStats(type: string): void {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - 24);
-    this.statsService.getAllStatsDateRange(this.location, startDate.valueOf(), new Date().valueOf()).subscribe(data => {
-      this._stats24Hr = normaliseWeatherStats(data);
-    });
+    this.statsService
+      .getAllStatsDateRange(
+        this.location,
+        startDate.valueOf(),
+        new Date().valueOf()
+      )
+      .subscribe((data) => {
+        this._stats24Hr = normaliseWeatherStats(data);
+      });
   }
 
   private set3MonthStats(type: string): void {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 3);
-    this.statsService.getAllStatsDateRange(this.location, startDate.valueOf(), new Date().valueOf()).subscribe(data => {
-      this._stats3Month = normaliseWeatherStats(data);
-    });
+    this.statsService
+      .getAllStatsDateRange(
+        this.location,
+        startDate.valueOf(),
+        new Date().valueOf()
+      )
+      .subscribe((data) => {
+        this._stats3Month = normaliseWeatherStats(data);
+      });
   }
 
   private setAllStats(type: string): void {
     const now = new Date().valueOf();
-    this.statsService.getAllStatsDateRange(this.location,1,now.valueOf()).subscribe(data => {
-      this._statsAll = normaliseWeatherStats(data);
-    });
+    this.statsService
+      .getAllStatsDateRange(this.location, 1, now.valueOf())
+      .subscribe((data) => {
+        this._statsAll = normaliseWeatherStats(data);
+      });
   }
 
   private setLocations(): void {
-    this.locationService.getLocations().subscribe(locations => {
+    this.locationService.getLocations().subscribe((locations) => {
       this.locations = locations;
     });
   }
@@ -407,8 +452,6 @@ const buildSamples = (
   return result;
 };
 
-
-
 const getRange = (
   values: number[],
   multiplier: number = 5
@@ -421,5 +464,3 @@ const getRange = (
     max: Math.ceil(max / multiplier) * multiplier,
   };
 };
-
-
