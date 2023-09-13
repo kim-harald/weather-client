@@ -5,6 +5,7 @@ import { SummaryReading, SummaryReadings, SummaryService } from '@openapi';
 import { DataRow, Mode, SummaryType } from '@models';
 import { kChartOptions } from '@common/settings';
 import { convertToDataRows, unsubscribeAll } from '@common/common';
+import { error } from 'console';
 
 @Component({
   selector: 'app-summary',
@@ -12,8 +13,8 @@ import { convertToDataRows, unsubscribeAll } from '@common/common';
   styleUrls: ['./summary.component.scss'],
 })
 export class SummaryComponent implements OnInit, OnDestroy {
-  private _location = '';
-  private _subscriptions: Array<Subscription> = [];
+  private _location = 'dalet';
+  private _subscriptions: Record<string, Subscription> = {};
 
   @Input()
   public location$: Subject<string> = new Subject<string>();
@@ -38,31 +39,30 @@ export class SummaryComponent implements OnInit, OnDestroy {
   constructor(
     private readonly summaryService: SummaryService,
     private readonly mqttService: MqttService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this._subscriptions.push(
+    this._subscriptions['location'] =
       this.location$
-        .pipe(
-          concatMap((location) => {
-            this._location = location;
-            return this.getSummary(location, this.summaryType, true);
-          })
-        )
-        .subscribe((result) => {
-          this.DataRows = convertToDataRows(
-            result,
-            this._location,
-            this.summaryType
-          );
-        })
-    );
+        .subscribe({
+          next: location => this.setup(location),
+          error: (err) => console.error(err)
+        });
+  }
 
-    this._subscriptions.push(
-      this.getSummary(this._location, this.summaryType, false).subscribe((result) => {
-        this.DataRows = convertToDataRows(result, this._location, this.summaryType);
-      })
-    );
+  private setup(location: string): void {
+    this._subscriptions[location] =
+      this.getSummary(this._location, this.summaryType).subscribe({
+        next: summaryData => this.DataRows = convertToDataRows(summaryData, location, this.summaryType),
+        error: err => console.error
+      });
+
+    this._subscriptions[`${location}-mqtt`] = this.mqttService.observe('summary').pipe(
+      concatMap(() => this.getSummary(location, this.summaryType))
+    ).subscribe({
+      next: summaryData => this.DataRows = convertToDataRows(summaryData, location, this.summaryType),
+      error: err => console.error
+    });
   }
 
   ngOnDestroy(): void {
@@ -71,27 +71,22 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   private getSummary(
     location: string,
-    summaryType:SummaryType,
-    isInit = false
+    summaryType: SummaryType
   ): Observable<SummaryReading[]> {
 
-    const summary$ = (location:string,start:number,end:number):Observable<SummaryReadings> => {
+    const summary$ = (location: string, start: number, end: number): Observable<SummaryReadings> => {
       switch (summaryType) {
-        case 'day' : return this.summaryService.getDailySummary(location,start,end);
-        case 'hour' : return this.summaryService.getHourlySummary(location,start, end);
-        default: return this.summaryService.getHourlySummary(location,start, end);
+        case 'day': return this.summaryService.getDailySummary(location, start, end);
+        case 'hour': return this.summaryService.getHourlySummary(location, start, end);
+        default: return this.summaryService.getHourlySummary(location, start, end);
       }
     };
 
-    const signal$ = isInit ? of({}) : this.mqttService.observe('summary');
-    return signal$.pipe(
-      concatMap(() => {
-        const now = new Date();
-        const end = now.valueOf();
-        now.setHours(now.getHours() - 48);
-        const start = now.valueOf();
-        return summary$(location, start, end);
-      }),
+    const now = new Date();
+    const end = now.valueOf();
+    now.setHours(now.getHours() - 48);
+    const start = now.valueOf();
+    return summary$(location, start, end).pipe(
       map((summaryReading) => summaryReading.data)
     );
   }
