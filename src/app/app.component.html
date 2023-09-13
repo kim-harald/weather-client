@@ -14,5 +14,5 @@
 
 <app-select-location [locations]="locations" [(location)]="location" (locationChange)="init($event)"></app-select-location>
 <app-detail [locations$]="location$" [mode]="mode"></app-detail>
-<app-summary [location$]="location$" [mode]="mode" [summaryType]="'hour'"></app-summary>
-<app-summary [location$]="location$" [mode]="mode" [summaryType]="'day'"></app-summary>
+<app-summary [location$]="location$" [mode]="mode" [summaryType]="'hour'" [span]="48"></app-summary>
+<app-summary [location$]="location$" [mode]="mode" [summaryType]="'day'" [span]="60"></app-summary>

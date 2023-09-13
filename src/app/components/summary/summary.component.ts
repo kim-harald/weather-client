@@ -53,14 +53,14 @@ export class SummaryComponent implements OnInit, OnDestroy {
           this.DataRows = convertToDataRows(
             result,
             this._location,
-            'hour'
+            this.summaryType
           );
         })
     );
 
     this._subscriptions.push(
       this.getSummary(this._location, this.summaryType, false).subscribe((result) => {
-        this.DataRows = convertToDataRows(result, this._location, 'hour');
+        this.DataRows = convertToDataRows(result, this._location, this.summaryType);
       })
     );
   }
