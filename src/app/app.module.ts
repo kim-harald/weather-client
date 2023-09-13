@@ -13,16 +13,16 @@ import { HttpClientModule } from '@angular/common/http';
 import { WeatherGaugeComponent } from './components/weather-gauge/weather-gauge.component';
 import { StatsComponent } from './components/stats/stats.component';
 import { SelectLocationComponent } from './components/select-location/select-location.component';
-import { HourlySummaryComponent } from './components/hourly-summary/hourly-summary.component';
+import { SummaryComponent } from './components/summary/summary.component';
 import { OpenAPI } from './openapi';
 import { DetailComponent } from './components/detail/detail.component';
 
 const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: env.mqtt.server,
   port: env.mqtt.port,
-  protocol: (env.mqtt.protocol === "wss") ? "wss" : "ws",
+  protocol: env.mqtt.protocol === 'wss' ? 'wss' : 'ws',
   path: '/mqtt',
-  rejectUnauthorized:false
+  rejectUnauthorized: false,
 };
 
 OpenAPI.BASE = '/api/weather';
@@ -30,18 +30,22 @@ OpenAPI.BASE = '/api/weather';
 @NgModule({
   declarations: [
     AppComponent,
-    RemoveCommaPipe, 
-    BatteryComponent, WeatherChartComponent, WeatherGaugeComponent, StatsComponent, SelectLocationComponent, HourlySummaryComponent, DetailComponent
+    RemoveCommaPipe,
+    BatteryComponent,
+    WeatherChartComponent,
+    WeatherGaugeComponent,
+    StatsComponent,
+    SelectLocationComponent,
+    SummaryComponent,
+    DetailComponent,
   ],
   imports: [
     BrowserModule,
     MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
     GoogleChartsModule,
-    HttpClientModule
+    HttpClientModule,
   ],
-  providers: [
-    RemoveCommaPipe
-  ],
-  bootstrap: [AppComponent]
+  providers: [RemoveCommaPipe],
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

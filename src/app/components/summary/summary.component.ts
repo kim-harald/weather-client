@@ -1,22 +1,17 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MqttService } from 'ngx-mqtt';
 import { Observable, Subject, Subscription, concatMap, map, of } from 'rxjs';
-import { convertToDataRows, unsubscribeAll } from 'src/app/common/common';
-import { kChartOptions } from 'src/app/common/settings';
-import { DataRow } from 'src/app/models/datarow';
-import { Mode } from 'src/app/models/mode';
-import {
-  SummaryReading,
-  SummaryReadings,
-  SummaryService,
-} from 'src/app/openapi';
+import { SummaryReading, SummaryReadings, SummaryService } from '@openapi';
+import { DataRow, Mode, SummaryType } from '@models';
+import { kChartOptions } from '@common/settings';
+import { convertToDataRows, unsubscribeAll } from '@common/common';
 
 @Component({
-  selector: 'hourly-summary',
-  templateUrl: './hourly-summary.component.html',
-  styleUrls: ['./hourly-summary.component.scss'],
+  selector: 'app-summary',
+  templateUrl: './summary.component.html',
+  styleUrls: ['./summary.component.scss'],
 })
-export class HourlySummaryComponent implements OnInit, OnDestroy {
+export class SummaryComponent implements OnInit, OnDestroy {
   private _location = '';
   private _subscriptions: Array<Subscription> = [];
 
@@ -26,9 +21,15 @@ export class HourlySummaryComponent implements OnInit, OnDestroy {
   @Input()
   public mode: Mode = 'temperature';
 
+  @Input()
+  public span: number = 48;
+
+  @Input()
+  public summaryType: SummaryType = 'hour';
+
   public chartOptions = kChartOptions;
 
-  public HourlyDataRows: Record<Mode, DataRow[]> = {
+  public DataRows: Record<Mode, DataRow[]> = {
     temperature: [],
     humidity: [],
     pressure: [],
@@ -45,11 +46,11 @@ export class HourlySummaryComponent implements OnInit, OnDestroy {
         .pipe(
           concatMap((location) => {
             this._location = location;
-            return this.getHourlySummary(location, true);
+            return this.getSummary(location, this.summaryType, true);
           })
         )
         .subscribe((result) => {
-          this.HourlyDataRows = convertToDataRows(
+          this.DataRows = convertToDataRows(
             result,
             this._location,
             'hour'
@@ -58,8 +59,8 @@ export class HourlySummaryComponent implements OnInit, OnDestroy {
     );
 
     this._subscriptions.push(
-      this.getHourlySummary(this._location, false).subscribe((result) => {
-        this.HourlyDataRows = convertToDataRows(result, this._location, 'hour');
+      this.getSummary(this._location, this.summaryType, false).subscribe((result) => {
+        this.DataRows = convertToDataRows(result, this._location, 'hour');
       })
     );
   }
@@ -68,10 +69,20 @@ export class HourlySummaryComponent implements OnInit, OnDestroy {
     unsubscribeAll(this._subscriptions);
   }
 
-  private getHourlySummary(
+  private getSummary(
     location: string,
+    summaryType:SummaryType,
     isInit = false
   ): Observable<SummaryReading[]> {
+
+    const summary$ = (location:string,start:number,end:number):Observable<SummaryReadings> => {
+      switch (summaryType) {
+        case 'day' : return this.summaryService.getDailySummary(location,start,end);
+        case 'hour' : return this.summaryService.getHourlySummary(location,start, end);
+        default: return this.summaryService.getHourlySummary(location,start, end);
+      }
+    };
+
     const signal$ = isInit ? of({}) : this.mqttService.observe('summary');
     return signal$.pipe(
       concatMap(() => {
@@ -79,7 +90,7 @@ export class HourlySummaryComponent implements OnInit, OnDestroy {
         const end = now.valueOf();
         now.setHours(now.getHours() - 48);
         const start = now.valueOf();
-        return this.summaryService.getHourlySummary(location, start, end);
+        return summary$(location, start, end);
       }),
       map((summaryReading) => summaryReading.data)
     );

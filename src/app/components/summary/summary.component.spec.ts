@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HourlySummaryComponent } from './hourly-summary.component';
+import { SummaryComponent } from './summary.component';
 
-describe('HourlySummaryComponent', () => {
-  let component: HourlySummaryComponent;
-  let fixture: ComponentFixture<HourlySummaryComponent>;
+describe('SummaryComponent', () => {
+  let component: SummaryComponent;
+  let fixture: ComponentFixture<SummaryComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ HourlySummaryComponent ]
+      declarations: [ SummaryComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(HourlySummaryComponent);
+    fixture = TestBed.createComponent(SummaryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
