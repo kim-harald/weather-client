@@ -223,9 +223,10 @@ export const normaliseWeatherStats = (
 };
 
 export const unsubscribeAll = (
-  subscriptions: Array<Subscription | undefined>
+  subscriptions: Record<string, Subscription>
 ) => {
-  subscriptions.forEach((subscription) => {
+  Object.keys(subscriptions).forEach(key => {
+    const subscription = subscriptions[key];
     if (subscription && !subscription.closed) {
       subscription.unsubscribe();
     }
@@ -243,7 +244,7 @@ export const convertToDataRows = (
     pressure: [],
   };
 
-  if (data.length === 0 ) {
+  if (data.length === 0) {
     return result;
   }
   const items =
