@@ -247,10 +247,10 @@ export const convertToDataRows = (
   if (data.length === 0) {
     return result;
   }
-  const items =
+  const items = 
     summaryType === '5min'
-      ? (data as Reading[]).filter((item) => item.location === location)
-      : data;
+      ? (data as Reading[]).filter(item => item.location === location)
+      : (data as SummaryReading[]).filter(item => item.location === location);
 
   Modes.forEach((s) => {
     const mode = s as Mode;

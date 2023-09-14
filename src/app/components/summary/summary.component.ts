@@ -37,30 +37,43 @@ export class SummaryComponent implements OnInit, OnDestroy {
   constructor(
     private readonly summaryService: SummaryService,
     private readonly mqttService: MqttService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this._subscriptions['location'] =
-      this.location$
-        .subscribe({
-          next: location => this.setup(location),
-          error: (err) => console.error(err)
-        });
+    this._subscriptions['location'] = this.location$.subscribe({
+      next: (location) => this.setup(location),
+      error: (err) => console.error(err),
+    });
   }
 
   private setup(location: string): void {
-    this._subscriptions[location] =
-      this.getSummary(this._location, this.summaryType).subscribe({
-        next: summaryData => this.DataRows = convertToDataRows(summaryData, location, this.summaryType),
-        error: err => console.error
-      });
-
-    this._subscriptions[`${location}-mqtt`] = this.mqttService.observe('summary').pipe(
-      concatMap(() => this.getSummary(location, this.summaryType))
+    this._subscriptions[location] = this.getSummary(
+      this._location,
+      this.summaryType
     ).subscribe({
-      next: summaryData => this.DataRows = convertToDataRows(summaryData, location, this.summaryType),
-      error: err => console.error
+      next: (summaryData) => {
+        this.DataRows = convertToDataRows(
+          summaryData,
+          location,
+          this.summaryType
+        );
+      },
+      error: console.error,
     });
+
+    this._subscriptions[`${location}-mqtt`] = this.mqttService
+      .observe('summary')
+      .pipe(concatMap(() => this.getSummary(location, this.summaryType)))
+      .subscribe({
+        next: (summaryData) => {
+          this.DataRows = convertToDataRows(
+            summaryData,
+            location,
+            this.summaryType
+          );
+        },
+        error: console.error,
+      });
   }
 
   ngOnDestroy(): void {
@@ -71,20 +84,28 @@ export class SummaryComponent implements OnInit, OnDestroy {
     location: string,
     summaryType: SummaryType
   ): Observable<SummaryReading[]> {
-
-    const summary$ = (location: string, start: number, end: number): Observable<SummaryReadings> => {
+    const summary$ = (location: string): Observable<SummaryReadings> => {
       switch (summaryType) {
-        case 'day': return this.summaryService.getDailySummary(location, start, end);
-        case 'hour': return this.summaryService.getHourlySummary(location, start, end);
-        default: return this.summaryService.getHourlySummary(location, start, end);
+        case 'day': {
+          const now = new Date();
+          const end = now.valueOf();
+          now.setDate(now.getDate() - this.span);
+          const start = now.valueOf();
+          return this.summaryService.getDailySummary(location, start, end);
+        }
+        case 'hour': {
+          const now = new Date();
+          const end = now.valueOf();
+          now.setHours(now.getHours() - this.span);
+          const start = now.valueOf();
+          return this.summaryService.getHourlySummary(location, start, end);
+        }
+        default:
+          throw new Error("this shouldn't happen");
       }
     };
 
-    const now = new Date();
-    const end = now.valueOf();
-    now.setHours(now.getHours() - 48);
-    const start = now.valueOf();
-    return summary$(location, start, end).pipe(
+    return summary$(location).pipe(
       map((summaryReading) => summaryReading.data)
     );
   }
