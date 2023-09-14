@@ -1,18 +1,74 @@
-
 <app-battery [device]="location"></app-battery>
-<app-weather-gauge [units]="'C'" [min]="-40" [max]="40" [color]="'rgba(200,50,50,0.4)'" [value]="temperature"
-  [delta]="trendTemperature" (click)="handleClick('temperature')">
+<app-weather-gauge
+  [units]="'C'"
+  [min]="-40"
+  [max]="40"
+  [color]="'rgba(200,50,50,0.4)'"
+  [value]="temperature"
+  [delta]="trendTemperature"
+  (click)="handleClick('temperature')"
+>
 </app-weather-gauge>
-<app-weather-gauge [units]="'hPa'" [min]="800" [max]="1100" [color]="'rgba(200,200,0,0.4)'" [value]="pressure"
-  [delta]="trendPressure" (click)="handleClick('pressure')">
+<app-weather-gauge
+  [units]="'hPa'"
+  [min]="800"
+  [max]="1100"
+  [color]="'rgba(200,200,0,0.4)'"
+  [value]="pressure"
+  [delta]="trendPressure"
+  (click)="handleClick('pressure')"
+>
 </app-weather-gauge>
-<app-weather-gauge *ngIf="humidity > 0" [units]="'%'" [min]="0" [max]="100" [color]="'rgba(50,50,200,0.4)'" [value]="humidity"
-  [delta]="trendHumidity" (click)="handleClick('humidity')">
+<app-weather-gauge
+  *ngIf="humidity > 0"
+  [units]="'%'"
+  [min]="0"
+  [max]="100"
+  [color]="'rgba(50,50,200,0.4)'"
+  [value]="humidity"
+  [delta]="trendHumidity"
+  (click)="handleClick('humidity')"
+>
 </app-weather-gauge>
 
-<div></div>
-
-<app-select-location [locations]="locations" [(location)]="location" (locationChange)="init($event)"></app-select-location>
+<div>
+  <app-stats
+    class="container"
+    [location$]="location$"
+    [mode]="mode"
+    statSpan="All"
+    title="Alle"
+  ></app-stats>
+  <app-stats
+    class="container"
+    [location$]="location$"
+    [mode]="mode"
+    statSpan="1Month"
+    title="Siste månad"
+  ></app-stats>
+  <app-stats
+    class="container"
+    [location$]="location$"
+    [mode]="mode"
+    statSpan="24Hrs"
+    title="Siste 24 timer"
+  ></app-stats>
+</div>
+<app-select-location
+  [locations]="locations"
+  [(location)]="location"
+  (locationChange)="init($event)"
+></app-select-location>
 <app-detail [locations$]="location$" [mode]="mode"></app-detail>
-<app-summary [location$]="location$" [mode]="mode" [summaryType]="'hour'" [span]="48"></app-summary>
-<app-summary [location$]="location$" [mode]="mode" [summaryType]="'day'" [span]="60"></app-summary>
+<app-summary
+  [location$]="location$"
+  [mode]="mode"
+  [summaryType]="'hour'"
+  [span]="48"
+></app-summary>
+<app-summary
+  [location$]="location$"
+  [mode]="mode"
+  [summaryType]="'day'"
+  [span]="60"
+></app-summary>

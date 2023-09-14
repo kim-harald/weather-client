@@ -4,18 +4,14 @@ import { MqttService } from 'ngx-mqtt';
 import { Subject, map } from 'rxjs';
 import {
   cKelvinOffset,
-  convertDate,
-  convertTime,
   convertToDataRows,
   normaliseWeatherStats,
   rotate,
   rounded,
-  trendline,
 } from '@common';
 import { kChartOptions } from './common/settings';
 import { DataRow } from './models/datarow';
-import { Mode, Modes } from './models/mode';
-import { ReadingType } from './models/readingtype';
+import { Mode } from './models/mode';
 import {
   LocationsService,
   Reading,

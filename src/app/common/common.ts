@@ -4,6 +4,8 @@ import './string.extensions';
 import { Mode, Modes } from '../models/mode';
 import { DataRow } from '../models/datarow';
 import { SummaryType } from '../models/SummaryType';
+import { DateRange } from '../models/daterange';
+import { StatSpan } from '@models/stats';
 
 export const cKelvinOffset = 273.15;
 
@@ -311,3 +313,29 @@ export const rotate = (
   //console.info(values);
   return values;
 };
+
+export const getDateRange = (statspan: StatSpan): DateRange => {
+  const endDate = new Date();
+  const startDate = new Date();
+  switch (statspan) {
+    case 'All': {
+      return new DateRange(new Date(0, 0, 0), endDate);
+    }
+
+    case '3Month': {
+      startDate.setMonth(startDate.getMonth() - 3);
+      break;
+    }
+
+    case '1Month': {
+      startDate.setMonth(startDate.getMonth() - 1);
+      break;
+    }
+
+    case '24Hrs': {
+      startDate.setHours(startDate.getHours() - 1);
+    }
+  }
+
+  return new DateRange(startDate, endDate);
+}
