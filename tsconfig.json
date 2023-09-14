@@ -28,11 +28,11 @@
       // "@openapi": ["./src/app/openapi/index.ts"],
       // "@models": ["./src/app/models/index.ts"],
       // "@models/stats": ["./src/app/models/stats/index.ts"]
-      "@common/*" :["./src/app/common/*"],
+      "@common" :["./src/app/common/index.ts"],
       "@openapi" : ["./src/app/openapi/index.ts"],
       "@models":["./src/app/models/index.ts"],
       "@models/stats" : ["./src/app/models/stats/index.ts"],
-      "@services/*":[",/src/app/services/*"]
+      "@services":["./src/app/services"]
 
     }
   },

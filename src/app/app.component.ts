@@ -8,9 +8,10 @@ import {
   convertTime,
   convertToDataRows,
   normaliseWeatherStats,
+  rotate,
   rounded,
   trendline,
-} from './common/common';
+} from '@common';
 import { kChartOptions } from './common/settings';
 import { DataRow } from './models/datarow';
 import { Mode, Modes } from './models/mode';
@@ -24,8 +25,7 @@ import {
   SummaryService,
   WeatherStats,
   Location,
-} from './openapi';
-import {} from './common/common';
+} from '@openapi';
 
 const k_Hours = 4;
 const k_Samples = 360;
@@ -184,42 +184,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     this.setAllSummary();
 
-    this.mqttService
-      .observe(`+/sensor/all`)
-      .pipe(
-        map((iqttMessage) => {
-          const location = iqttMessage.topic.split('/')[0];
-          const reading = JSON.parse(iqttMessage.payload.toString()) as Reading;
-          reading.location = location;
-          return reading;
-        })
-      )
-      .subscribe((reading) => {
-        if (!this.readings.find((f) => f.id === reading.id)) {
-          const when = new Date(reading.ts);
-          this.readings.push(reading);
-
-          this.readings.sort((a, b) => a.ts - b.ts);
-          const start = new Date();
-          start.setHours(start.getHours() - k_Hours);
-          this.readings = this.readings.filter((o) => o.ts >= start.valueOf());
-          this._datarows = convertToDataRows(
-            this.readings,
-            this.location,
-            '5min'
-          );
-          this.setRange();
-        }
-
-        this.setAllSummary();
-        // this.setHourlySummaries();
-        // this.setDailySummaries();
-
-        this.set24hrStats(this.mode);
-        this.set3MonthStats(this.mode);
-        this.setAllStats(this.mode);
-        this.setLocations();
-      });
+    
   }
 
   private setAllSummary(): void {
@@ -261,71 +226,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.chartOptions['humidity'].max = range['humidity'].max;
   }
 
-  private setupReadingListener() {
-    this.mqttService
-      .observe(`${this.location}/sensor/#`)
-      .subscribe((mqttMessage) => {
-        const readingType = mqttMessage.topic.replace(
-          `${this.location}/sensor/`,
-          ''
-        ) as ReadingType;
-        const value = Number(mqttMessage.payload.toString());
-
-        switch (readingType) {
-          case 'temperature':
-            this._sensorReadings['temperature'] = rotate(
-              this._sensorReadings['temperature'],
-              value,
-              k_Samples
-            );
-            this.trendTemperature = 0;
-            this.trendTemperature = rounded(
-              trendline(
-                this._sensorReadings['temperature'].map((o, index) => {
-                  return { x: index, y: o };
-                })
-              ).b,
-              3
-            );
-            this.temperature = rounded(value - cKelvinOffset, 1);
-            return;
-          case 'pressure':
-            this._sensorReadings['pressure'] = rotate(
-              this._sensorReadings['pressure'],
-              value,
-              k_Samples
-            );
-            this.trendPressure = 0;
-            this.trendPressure = rounded(
-              trendline(
-                this._sensorReadings['pressure'].map((o, index) => {
-                  return { x: index, y: o };
-                })
-              ).b,
-              3
-            );
-            this.pressure = rounded(value / 100, 0);
-            return;
-          case 'humidity':
-            this._sensorReadings['humidity'] = rotate(
-              this._sensorReadings['humidity'],
-              value,
-              k_Samples
-            );
-            this.trendHumidity = 0;
-            this.trendHumidity = rounded(
-              trendline(
-                this._sensorReadings['humidity'].map((o, index) => {
-                  return { x: index, y: o };
-                })
-              ).b,
-              0
-            );
-            this.humidity = rounded(value, 0);
-            return;
-        }
-      });
-  }
+  
 
   private setHourlySummaries(): void {
     const startDate = new Date();
@@ -405,19 +306,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 }
 
-const rotate = (
-  values: number[],
-  value: number,
-  limit: number = 30
-): number[] => {
-  values ??= [];
-  values.push(value);
-  if (values.length > limit) {
-    values.splice(0, 1);
-  }
-  //console.info(values);
-  return values;
-};
+
 
 const buildSamples = (
   readings: Reading[],

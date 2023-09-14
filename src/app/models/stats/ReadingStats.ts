@@ -1,4 +1,4 @@
-import { Reading } from "../reading";
+import { Reading } from '@openapi';
 
 
 export type ReadingStat = {

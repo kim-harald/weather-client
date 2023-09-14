@@ -297,3 +297,17 @@ const convertValue = (mode: Mode, value: number): number => {
       return value !== 0 ? rounded(value - cKelvinOffset, 1) : 0;
   }
 };
+
+export const rotate = (
+  values: any[],
+  value: any,
+  limit: number = 30
+): any[] => {
+  values ??= [];
+  values.push(value);
+  if (values.length > limit) {
+    values.splice(0, 1);
+  }
+  //console.info(values);
+  return values;
+};

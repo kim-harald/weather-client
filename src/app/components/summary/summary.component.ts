@@ -3,9 +3,7 @@ import { MqttService } from 'ngx-mqtt';
 import { Observable, Subject, Subscription, concatMap, map, of } from 'rxjs';
 import { SummaryReading, SummaryReadings, SummaryService } from '@openapi';
 import { DataRow, Mode, SummaryType } from '@models';
-import { kChartOptions } from '@common/settings';
-import { convertToDataRows, unsubscribeAll } from '@common/common';
-import { error } from 'console';
+import { convertToDataRows, kChartOptions, unsubscribeAll } from '@common';
 
 @Component({
   selector: 'app-summary',
