@@ -48,7 +48,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   private setup(location: string): void {
     this._subscriptions[location] = this.getSummary(
-      this._location,
+      location,
       this.summaryType
     ).subscribe({
       next: (summaryData) => {
