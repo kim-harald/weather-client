@@ -137,6 +137,8 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     if (location) {
       this.location = location;
+    } else {
+      this.setLocations();
     }
 
     // this.setupReadings();
@@ -147,7 +149,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     // this.set3MonthStats(this.mode);
     // this.setAllStats(this.mode);
     this.location$.next(this.location);
-    this.setLocations();
+    
   }
 
   public handleClick(mode: Mode): void {
