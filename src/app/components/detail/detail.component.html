@@ -1,7 +1,7 @@
 <div class="chart-section">
   <div class="chart-container">
     <app-weather-chart
-      [class]="mode === 'temperature' ? 'visible' : 'hidden'"
+      [class]="globalService.mode === 'temperature' ? 'visible' : 'hidden'"
       title=""
       [data]="DetailDataRows['temperature']"
       [max]="chartOptions['temperature'].max"
@@ -12,7 +12,7 @@
     ></app-weather-chart>
     <app-weather-chart
       title=""
-      [class]="mode === 'pressure' ? 'visible' : 'hidden'"
+      [class]="globalService.mode === 'pressure' ? 'visible' : 'hidden'"
       [data]="DetailDataRows['pressure']"
       [max]="chartOptions['pressure'].max"
       [min]="chartOptions['pressure'].min"
@@ -22,7 +22,7 @@
     ></app-weather-chart>
     <app-weather-chart
       title=""
-      [class]="mode === 'humidity' ? 'visible' : 'hidden'"
+      [class]="globalService.mode === 'humidity' ? 'visible' : 'hidden'"
       [data]="DetailDataRows['humidity']"
       [max]="chartOptions['humidity'].max"
       [min]="chartOptions['humidity'].min"

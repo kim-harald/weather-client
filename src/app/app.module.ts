@@ -16,6 +16,7 @@ import { SelectLocationComponent } from './components/select-location/select-loc
 import { SummaryComponent } from './components/summary/summary.component';
 import { OpenAPI } from './openapi';
 import { DetailComponent } from './components/detail/detail.component';
+import { GaugeGroupComponent } from './components/gauge-group/gauge-group.component';
 
 const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: env.mqtt.server,
@@ -38,6 +39,7 @@ OpenAPI.BASE = '/api/weather';
     SelectLocationComponent,
     SummaryComponent,
     DetailComponent,
+    GaugeGroupComponent,
   ],
   imports: [
     BrowserModule,

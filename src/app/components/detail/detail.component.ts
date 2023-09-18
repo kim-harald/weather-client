@@ -1,12 +1,10 @@
 import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ListenersService } from '@services';
-import { MqttService } from 'ngx-mqtt';
+import { GlobalService, ListenersService } from '@services';
 import { Observable, Subject, Subscription, concatMap, map, of } from 'rxjs';
-import { convertToDataRows, rotate, unsubscribeAll } from 'src/app/common/common';
-import { kChartOptions } from 'src/app/common/settings';
+import { kChartOptions, convertToDataRows, rotate, unsubscribeAll } from '@common';
 import { DataRow } from 'src/app/models/datarow';
-import { Mode } from 'src/app/models/mode';
-import { Reading, ReadingsService } from 'src/app/openapi';
+import { Mode } from '@models';
+import { Reading, ReadingsService, Location } from '@openapi';
 
 @Component({
   selector: 'app-detail',
@@ -15,7 +13,6 @@ import { Reading, ReadingsService } from 'src/app/openapi';
 })
 export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  private _location = 'dalet';
   private _subscriptions: Record<string,Subscription> = {};
 
   public DetailDataRows: Record<Mode, DataRow[]> = {
@@ -25,17 +22,14 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @Input()
-  public locations$: Subject<string> = new Subject<string>();
-
-  @Input()
-  public mode: string = 'temperature';
-
-  @Input()
   public span: number = 120;
 
   public chartOptions = kChartOptions;
 
-  constructor(private readonly readingService: ReadingsService, private readonly listenerService: ListenersService) { }
+  constructor(
+    private readonly readingService: ReadingsService, 
+    private readonly listenerService: ListenersService,
+    public readonly globalService:GlobalService) { }
 
   ngOnInit(): void {
     //this.init();
@@ -50,8 +44,8 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private init(): void {
-    this._subscriptions['location'] = (this.locations$
-      .subscribe(location => this.setup(location))
+    this._subscriptions['location'] = (this.globalService.location$
+      .subscribe(item => this.setup(item))
       );
   }
 

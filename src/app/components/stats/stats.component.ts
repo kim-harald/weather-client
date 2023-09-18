@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { DateRange } from '@models';
 import { StatSpan, StatsService, WeatherStats } from '@openapi';
-import { ListenersService } from '@services';
+import { GlobalService, ListenersService } from '@services';
 import { Subject, Subscription, concatMap } from 'rxjs';
 import { getDateRange, normaliseWeatherStats, unsubscribeAll } from 'src/app/common/common';
 
@@ -38,12 +38,15 @@ export class StatsComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly statsService: StatsService,
-    private readonly listenersService: ListenersService
+    private readonly listenersService: ListenersService,
+    public readonly globalService: GlobalService
   ) {}
 
   ngOnInit(): void {
     this.location$.subscribe(location => 
       this.setup(location, this.statSpan));
+
+    this
   }
 
   ngOnDestroy(): void {

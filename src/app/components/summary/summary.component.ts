@@ -4,6 +4,7 @@ import { Observable, Subject, Subscription, concatMap, map, of } from 'rxjs';
 import { SummaryReading, SummaryReadings, SummaryService } from '@openapi';
 import { DataRow, Mode, SummaryType } from '@models';
 import { convertToDataRows, kChartOptions, unsubscribeAll } from '@common';
+import { GlobalService } from '@services';
 
 @Component({
   selector: 'app-summary',
@@ -13,12 +14,6 @@ import { convertToDataRows, kChartOptions, unsubscribeAll } from '@common';
 export class SummaryComponent implements OnInit, OnDestroy {
   private _location = 'dalet';
   private _subscriptions: Record<string, Subscription> = {};
-
-  @Input()
-  public location$: Subject<string> = new Subject<string>();
-
-  @Input()
-  public mode: Mode = 'temperature';
 
   @Input()
   public span: number = 48;
@@ -36,11 +31,12 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly summaryService: SummaryService,
-    private readonly mqttService: MqttService
+    private readonly mqttService: MqttService,
+    public readonly globalService: GlobalService
   ) {}
 
   ngOnInit(): void {
-    this._subscriptions['location'] = this.location$.subscribe({
+    this._subscriptions['location'] = this.globalService.location$.subscribe({
       next: (location) => this.setup(location),
       error: (err) => console.error(err),
     });

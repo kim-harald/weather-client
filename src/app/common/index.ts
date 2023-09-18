@@ -3,6 +3,7 @@ export {
   convertDate,
   convertTime,
   convertToDataRows,
+  convertValue,
   delay,
   getStandardDeviation,
   int2BoolList,

@@ -288,13 +288,13 @@ export const convertToDataRows = (
   return result;
 };
 
-const convertValue = (mode: Mode, value: number): number => {
+export const convertValue = (mode: Mode, value: number): number => {
   switch (mode) {
-    case 'humidity':
+    case Mode.humidity:
       return value;
-    case 'pressure':
+    case Mode.pressure:
       return rounded(value / 100, 0);
-    case 'temperature':
+    case Mode.temperature:
       return value !== 0 ? rounded(value - cKelvinOffset, 1) : 0;
   }
 };

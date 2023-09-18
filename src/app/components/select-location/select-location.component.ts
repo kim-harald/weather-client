@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { GlobalService } from '@services';
 import { Location } from 'src/app/openapi/models/Location';
 
 
@@ -8,16 +9,13 @@ import { Location } from 'src/app/openapi/models/Location';
   styleUrls: ['./select-location.component.scss'],
 })
 export class SelectLocationComponent implements OnInit {
-  constructor() {}
+  constructor(private readonly globalService:GlobalService) {}
 
   @Input()
   public locations: Location[] = [];
 
   @Input()
   public location:string = '';
-
-  @Output()
-  public locationChange: EventEmitter<string> = new EventEmitter<string>();
 
   public isSelected(location:string):string {
     return location == this.location ? 'selected' :'';
@@ -31,6 +29,6 @@ export class SelectLocationComponent implements OnInit {
 
   public change(location:string):void {
     this.location = location;
-    this.locationChange.emit(location);
+    this.globalService.location = location;
   }
 }

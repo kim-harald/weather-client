@@ -1,6 +1,6 @@
 <div class="container" *ngIf="weatherStats">
     <div class="wrapper temperature">
-        <table [class]="mode=='temperature' ? 'visible':'hidden'" *ngIf="weatherStats.temperature">
+        <table [class]="globalService.mode =='temperature' ? 'visible':'hidden'" *ngIf="weatherStats.temperature">
             <caption>{{title}}</caption>
             <tr>
                 <td>Min</td>
@@ -20,7 +20,7 @@
         </table>
     </div>
     <div class="wrapper pressure">
-        <table [class]="mode=='pressure' ? 'visible':'hidden'" *ngIf="weatherStats.pressure">
+        <table [class]="globalService.mode=='pressure' ? 'visible':'hidden'" *ngIf="weatherStats.pressure">
             <caption>{{title}}</caption>
             <tr>
                 <td>Min</td>
@@ -40,7 +40,7 @@
         </table>
     </div>
     <div class="wrapper humidity">
-        <table [class]="mode=='humidity' ? 'visible':'hidden'" *ngIf="weatherStats.humidity">
+        <table [class]="globalService.mode=='humidity' ? 'visible':'hidden'" *ngIf="weatherStats.humidity">
             <caption>{{title}}</caption>
             <tr>
                 <td>Min</td>
