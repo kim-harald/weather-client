@@ -36,21 +36,21 @@
     class="container"
     [location$]="location$"
     [mode]="mode"
-    statSpan="All"
+    [statSpan]="STATSPAN.ALL"
     title="Alle"
   ></app-stats>
   <app-stats
     class="container"
     [location$]="location$"
     [mode]="mode"
-    statSpan="1Month"
+    [statSpan]="STATSPAN._30DAYS"
     title="Siste månad"
   ></app-stats>
   <app-stats
     class="container"
     [location$]="location$"
     [mode]="mode"
-    statSpan="24Hrs"
+    [statSpan]="STATSPAN._24HRS"
     title="Siste 24 timer"
   ></app-stats>
 </div>

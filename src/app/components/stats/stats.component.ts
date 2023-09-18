@@ -1,7 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { DateRange } from '@models';
-import { StatSpan } from '@models/stats';
-import { StatsService, WeatherStats } from '@openapi';
+import { StatSpan, StatsService, WeatherStats } from '@openapi';
 import { ListenersService } from '@services';
 import { Subject, Subscription, concatMap } from 'rxjs';
 import { getDateRange, normaliseWeatherStats, unsubscribeAll } from 'src/app/common/common';
@@ -26,7 +25,7 @@ export class StatsComponent implements OnInit, OnDestroy {
   public location$: Subject<string> = new Subject<string>();
 
   @Input()
-  public statSpan: StatSpan = 'All';
+  public statSpan: StatSpan = StatSpan.ALL;
 
   public maxTemperatureDate: string = '';
   public minTemperatureDate: string = '';
@@ -52,9 +51,8 @@ export class StatsComponent implements OnInit, OnDestroy {
   }
 
   private setup(location: string, statsSpan: StatSpan) {
-    let dr = getDateRange(statsSpan);
     this._subscriptions['location'] = this.statsService
-      .getAllStatsDateRange(location, dr.start.valueOf(), dr.end.valueOf())
+      .getStats(location, statsSpan)
       .subscribe({
         next: (data) => {
           this.weatherStats = normaliseWeatherStats(data);
@@ -65,8 +63,7 @@ export class StatsComponent implements OnInit, OnDestroy {
     this._subscriptions['listener'] = this.listenersService
       .stats()
       .pipe(concatMap(() => {
-        dr = getDateRange(statsSpan);
-        return this.statsService.getAllStatsDateRange(location,dr.start.valueOf(),dr.end.valueOf());
+        return this.statsService.getStats(location,this.statSpan)
       })).subscribe({
         next: (data) => {
           this.weatherStats = normaliseWeatherStats(data);

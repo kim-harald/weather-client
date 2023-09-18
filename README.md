@@ -31,7 +31,7 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 
 2.  run the openapi tool to import the swagger json file to create all the models, services and their methods
     eg
-    npx openapi --input ./src/swagger/swagger.json --output ./src/app/openapi --client angular
+    npx openapi --input ./src/spec/swagger.json --output ./src/app/openapi --client angular
     
 3.  edit the /src/index.ts file. It should contain only the following:-
     export * from './lib/index';

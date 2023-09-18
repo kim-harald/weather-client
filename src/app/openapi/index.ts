@@ -15,6 +15,7 @@ export type { Payload } from './models/Payload';
 export type { Reading } from './models/Reading';
 export type { ReadingStat } from './models/ReadingStat';
 export type { Stat } from './models/Stat';
+export { StatSpan } from './models/StatSpan';
 export type { Summary } from './models/Summary';
 export type { SummaryReading } from './models/SummaryReading';
 export type { SummaryReadings } from './models/SummaryReadings';

@@ -21,10 +21,13 @@ import {
   SummaryService,
   WeatherStats,
   Location,
+  StatSpan,
 } from '@openapi';
 
 const k_Hours = 4;
 const k_Samples = 360;
+
+
 
 @Component({
   selector: 'app-root',
@@ -55,6 +58,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   public locations: Location[] = [];
   public location: string = 'dalet';
   public location$: Subject<string> = new Subject<string>();
+
+  public STATSPAN = StatSpan;
 
   private _sensorReadings: Record<string, number[]> = {};
   public get sensorReadings(): Record<string, number[]> {

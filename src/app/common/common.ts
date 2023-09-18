@@ -1,11 +1,10 @@
 import { Subscription } from 'rxjs';
-import { Reading, SummaryReading, WeatherStats } from '../openapi';
+import { Reading, StatSpan, SummaryReading, WeatherStats } from '@openapi';
 import './string.extensions';
 import { Mode, Modes } from '../models/mode';
 import { DataRow } from '../models/datarow';
 import { SummaryType } from '../models/SummaryType';
 import { DateRange } from '../models/daterange';
-import { StatSpan } from '@models/stats';
 
 export const cKelvinOffset = 273.15;
 
@@ -318,22 +317,22 @@ export const getDateRange = (statspan: StatSpan): DateRange => {
   const endDate = new Date();
   const startDate = new Date();
   switch (statspan) {
-    case 'All': {
+    case StatSpan.ALL: {
       return new DateRange(new Date(0, 0, 0), endDate);
     }
 
-    case '3Month': {
-      startDate.setMonth(startDate.getMonth() - 3);
+    case StatSpan._90DAYS: {
+      startDate.setDate(startDate.getDate() - 90);
       break;
     }
 
-    case '1Month': {
-      startDate.setMonth(startDate.getMonth() - 1);
+    case StatSpan._30DAYS: {
+      startDate.setDate(startDate.getDate() - 24);
       break;
     }
 
-    case '24Hrs': {
-      startDate.setHours(startDate.getHours() - 1);
+    case StatSpan._24HRS: {
+      startDate.setHours(startDate.getHours() - 24);
     }
   }
 

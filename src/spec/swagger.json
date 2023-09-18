@@ -218,6 +218,15 @@
 					}
 				]
 			},
+			"StatSpan": {
+				"type": "string",
+				"enum": [
+					"All",
+					"90Days",
+					"30Days",
+					"24Hrs"
+				]
+			},
 			"DbStats": {
 				"allOf": [
 					{
@@ -811,6 +820,48 @@
 						"schema": {
 							"format": "double",
 							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/stats/{location}/{statSpan}": {
+			"get": {
+				"operationId": "GetStats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/WeatherStats"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the weather stats according the key from the cache",
+				"tags": [
+					"stats"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Location",
+						"in": "path",
+						"name": "location",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "StatSpan (24Hrs, 30Days, 90Days or All)",
+						"in": "path",
+						"name": "statSpan",
+						"required": true,
+						"schema": {
+							"$ref": "#/components/schemas/StatSpan"
 						}
 					}
 				]
