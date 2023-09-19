@@ -245,7 +245,7 @@ export const convertToDataRows = (
     pressure: [],
   };
 
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return result;
   }
   const items = 

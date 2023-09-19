@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { DeviceDetectorService } from 'ngx-device-detector';
-import { Subject } from 'rxjs';
 import { rotate, rounded } from '@common';
 import { DataRow } from './models/datarow';
 import { Mode } from './models/mode';
@@ -13,9 +12,8 @@ import {
   StatSpan,
 } from '@openapi';
 import { GlobalService } from './services/global.service';
-import { DateRange } from './models/daterange';
 
-const k_Samples = 360;
+
 
 @Component({
   selector: 'app-root',
@@ -38,66 +36,15 @@ export class AppComponent implements OnInit, AfterViewInit {
   public trendHumidity: number = 0;
 
   public isMobile: boolean = false;
-  // public chartOptions = kChartOptions;
-
-  // public colors: string[] = ['red'];
-  // public columns: string[] = ['Time', 'Temperature'];
 
   public locations: Location[] = [];
   public location: string = 'dalet';
 
   public STATSPAN = StatSpan;
 
-  // private _sensorReadings: Record<string, number[]> = {};
-  // public get sensorReadings(): Record<string, number[]> {
-  //   return this._sensorReadings;
-  // }
-
   public range: { min: number; max: number } = { min: -40, max: 40 };
 
-  private _datarows: Record<Mode, DataRow[]> = {
-    temperature: [],
-    humidity: [],
-    pressure: [],
-  };
-  public get DataRows(): Record<Mode, DataRow[]> {
-    return this._datarows;
-  }
 
-  private _hourlyDatarows: Record<Mode, DataRow[]> = {
-    temperature: [],
-    humidity: [],
-    pressure: [],
-  };
-
-  public get HourlyDataRows(): Record<Mode, DataRow[]> {
-    return this._hourlyDatarows;
-  }
-
-  private _dailyDatarows: Record<Mode, DataRow[]> = {
-    temperature: [],
-    humidity: [],
-    pressure: [],
-  };
-
-  public get DailyDataRows(): Record<Mode, DataRow[]> {
-    return this._dailyDatarows;
-  }
-
-  private _stats24Hr: WeatherStats = {} as WeatherStats;
-  public get Stats24Hr(): WeatherStats {
-    return this._stats24Hr;
-  }
-
-  private _stats3Month: WeatherStats = {} as WeatherStats;
-  public get Stats3Month(): WeatherStats {
-    return this._stats3Month;
-  }
-
-  private _statsAll: WeatherStats = {} as WeatherStats;
-  public get StatsAll(): WeatherStats {
-    return this._statsAll;
-  }
 
   public isReady: boolean = false;
 
@@ -117,48 +64,17 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.init();
   }
 
-  public init(location: string | undefined = undefined) {
+  public init() {
     this.locationService.getLocations().subscribe((locations) => {
       this.locations = locations;
       if (locations && locations.length > 0) {
-        this.globalService.location = locations[0].name;
+        this.globalService.location = locations[1].name;
       }
     });
   }
 }
 
-const buildSamples = (
-  readings: Reading[],
-  n: number
-): Record<string, number[]> => {
-  const result: Record<string, number[]> = {};
-  result['temperature'] = [];
-  result['pressure'] = [];
-  result['humidity'] = [];
-  const samples = rounded(n / readings.length, 0);
 
-  readings.forEach((reading) => {
-    for (let i = 0; i < samples; i++) {
-      result['temperature'] = rotate(
-        result['temperature'],
-        reading.temperature,
-        k_Samples
-      );
-      result['pressure'] = rotate(
-        result['pressure'],
-        reading.pressure,
-        k_Samples
-      );
-      result['humidity'] = rotate(
-        result['humidity'],
-        reading.humidity,
-        k_Samples
-      );
-    }
-  });
-
-  return result;
-};
 
 const getRange = (
   values: number[],
