@@ -14,7 +14,7 @@ import {
   unsubscribeAll,
 } from '@common';
 import { DataRow } from 'src/app/models/datarow';
-import { Mode } from '@models';
+import { DateRange, Mode } from '@models';
 import { Reading, ReadingsService, Location } from '@openapi';
 
 @Component({
@@ -36,18 +36,21 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public chartOptions = kChartOptions;
 
-  constructor(
-    private readonly readingService: ReadingsService,
-    private readonly listenerService: ListenersService,
-    public readonly globalService: GlobalService
-  ) {}
+  constructor(public readonly globalService: GlobalService) {}
 
   ngOnInit(): void {
     //this.init();
   }
 
   ngAfterViewInit(): void {
-    this.init();
+    this.globalService.ready$.subscribe({
+      next: () => {
+        this.init()
+      },
+      error: err => {
+        console.error(err);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -61,42 +64,10 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setup(location: string): void {
-    this._subscriptions[location] = this.getDetails(location).subscribe(
-      (readings) => {
-        this.globalService.nextReading(readings);
-        this.DetailDataRows = convertToDataRows(readings, location, '5min');
-      }
-    );
-
-    this._subscriptions[`${location}-mqtt`] = this.listenerService
-      .reading(location)
-      .subscribe({
-        next: (reading) => {
-          const readings = [reading];
-          const dataRow = convertToDataRows(readings, location, '5min');
-          this.DetailDataRows.temperature = rotate(
-            this.DetailDataRows.temperature,
-            dataRow.temperature[0]
-          );
-          this.DetailDataRows.pressure = rotate(
-            this.DetailDataRows.pressure,
-            dataRow.pressure[0]
-          );
-          this.DetailDataRows.humidity = rotate(
-            this.DetailDataRows.humidity,
-            dataRow.humidity[0]
-          );
-          this.globalService.nextReading(reading);
-        },
-        error: console.error,
-      });
-  }
-
-  private getDetails(location: string): Observable<Reading[]> {
-    const now = new Date();
-    const end = now.valueOf();
-    now.setMinutes(now.getMinutes() - this.span);
-    const start = now.valueOf();
-    return this.readingService.getReadings(location, start, end);
+    this._subscriptions[location] = this.globalService.readings$[
+      location
+    ].subscribe((readings) => {
+      this.DetailDataRows = convertToDataRows(readings, location, '5min');
+    });
   }
 }

@@ -13,6 +13,7 @@ import {
   StatSpan,
 } from '@openapi';
 import { GlobalService } from './services/global.service';
+import { DateRange } from './models/daterange';
 
 const k_Samples = 360;
 
@@ -113,7 +114,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    
     this.init();
   }
 
