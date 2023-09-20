@@ -1,0 +1,1 @@
+export type StatSpan = 'All' | '3Month' | '1Month' | '24Hrs';

@@ -1,0 +1,31 @@
+<app-weather-gauge
+  [units]="'C'"
+  [min]="-40"
+  [max]="40"
+  [color]="'rgba(200,50,50,0.4)'"
+  [value]="sample[MODE.temperature][globalService.location]"
+  [delta]="trend[MODE.temperature][globalService.location]"
+  (click)="handleClick(MODE.temperature)"
+>
+</app-weather-gauge>
+<app-weather-gauge
+  [units]="'hPa'"
+  [min]="800"
+  [max]="1100"
+  [color]="'rgba(200,200,0,0.4)'"
+  [value]="sample[MODE.pressure][globalService.location]"
+  [delta]="trend[MODE.pressure][globalService.location]"
+  (click)="handleClick(MODE.pressure)"
+>
+</app-weather-gauge>
+<app-weather-gauge
+  *ngIf="sample[MODE.humidity][globalService.location] > 0"
+  [units]="'%'"
+  [min]="0"
+  [max]="100"
+  [color]="'rgba(50,50,200,0.4)'"
+  [value]="sample[MODE.humidity][globalService.location]"
+  [delta]="trend[MODE.humidity][globalService.location]"
+  (click)="handleClick(MODE.humidity)"
+>
+</app-weather-gauge>

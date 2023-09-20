@@ -1,60 +1,60 @@
-<div class="container" *ngIf="stats">
+<div class="container" *ngIf="weatherStats">
     <div class="wrapper temperature">
-        <table [class]="mode=='temperature' ? 'visible':'hidden'" *ngIf="stats.temperature">
+        <table [class]="globalService.mode =='temperature' ? 'visible':'hidden'" *ngIf="weatherStats.temperature">
             <caption>{{title}}</caption>
             <tr>
                 <td>Min</td>
-                <td>{{stats.temperature.min.temperature | number: "1.1-1"}} C </td>
+                <td>{{weatherStats.temperature.min.temperature | number: "1.1-1"}} C </td>
                 <td>@ {{ minTemperatureDate }}</td>
             </tr>
             <tr>
                 <td>Max</td>
-                <td>{{stats.temperature.max.temperature | number: "1.1-1"}} C </td>
+                <td>{{weatherStats.temperature.max.temperature | number: "1.1-1"}} C </td>
                 <td>@ {{ maxTemperatureDate }}</td>
             </tr>
             <tr>
                 <td>Average</td>
-                <td>{{stats.temperature.mean | number: "1.1-1"}} C</td>
+                <td>{{weatherStats.temperature.mean | number: "1.1-1"}} C</td>
                 <td></td>
             </tr>
         </table>
     </div>
     <div class="wrapper pressure">
-        <table [class]="mode=='pressure' ? 'visible':'hidden'" *ngIf="stats.pressure">
+        <table [class]="globalService.mode=='pressure' ? 'visible':'hidden'" *ngIf="weatherStats.pressure">
             <caption>{{title}}</caption>
             <tr>
                 <td>Min</td>
-                <td>{{stats.pressure.min.pressure | number: "1.1-1"}} hPa </td>
+                <td>{{weatherStats.pressure.min.pressure | number: "1.1-1"}} hPa </td>
                 <td>@ {{ minPressureDate }}</td>
             </tr>
             <tr>
                 <td>Max</td>
-                <td>{{stats.pressure.max.pressure | number: "1.1-1"}} hPa </td>
+                <td>{{weatherStats.pressure.max.pressure | number: "1.1-1"}} hPa </td>
                 <td>@ {{ maxPressureDate }}</td>
             </tr>
             <tr>
                 <td>Average</td>
-                <td>{{stats.pressure.mean | number: "1.1-1" }} hPa</td>
+                <td>{{weatherStats.pressure.mean | number: "1.1-1" }} hPa</td>
                 <td></td>
             </tr>
         </table>
     </div>
     <div class="wrapper humidity">
-        <table [class]="mode=='humidity' ? 'visible':'hidden'" *ngIf="stats.humidity">
+        <table [class]="globalService.mode=='humidity' ? 'visible':'hidden'" *ngIf="weatherStats.humidity">
             <caption>{{title}}</caption>
             <tr>
                 <td>Min</td>
-                <td>{{stats.humidity.min.humidity | number: "1.0-0"}}% </td>
+                <td>{{weatherStats.humidity.min.humidity | number: "1.0-0"}}% </td>
                 <td>@ {{ minHumidityDate }}</td>
             </tr>
             <tr>
                 <td>Max</td>
-                <td>{{stats.humidity.max.humidity | number: "1.0-0"}}% </td>
+                <td>{{weatherStats.humidity.max.humidity | number: "1.0-0"}}% </td>
                 <td>@ {{ maxHumidityDate }}</td>
             </tr>
             <tr>
                 <td>Average</td>
-                <td>{{stats.humidity.mean | number: "1.0-0"}}%</td>
+                <td>{{weatherStats.humidity.mean | number: "1.0-0"}}%</td>
                 <td></td>
             </tr>
         </table>

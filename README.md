@@ -24,4 +24,18 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 
 ## Further help
 
+## to add a new openapi service library
+
+1.  get the swagger.json file from the service you wish to use
+    copy the file to ./swagger/
+
+2.  run the openapi tool to import the swagger json file to create all the models, services and their methods
+    eg
+    npx openapi --input ./src/spec/swagger.json --output ./src/app/openapi --client angular
+    
+3.  edit the /src/index.ts file. It should contain only the following:-
+    export * from './lib/index';
+
+4.  edit the config file
+
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.

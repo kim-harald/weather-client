@@ -1,0 +1,11 @@
+app-weather-gauge {
+    display: inline-block;
+    border-radius: 0.5em;
+    margin: 0.2em;
+  }
+  
+  app-weather-gauge:hover {
+    cursor: pointer;
+    background-color: rgba(50, 50, 50, 0.2);
+  }
+  

@@ -1,33 +1,53 @@
 import { Injectable } from '@angular/core';
-import { MqttService } from 'ngx-mqtt';
-import { concatMap, forkJoin, map, merge, mergeMap, Observable, of } from 'rxjs';
-import { LocationReading } from '../models/locationreading';
-import { Reading } from '../models/reading';
-import { ApiService } from './api.service';
+import { Subject, Subscription } from 'rxjs';
+import { DateRange, Mode } from '@models';
+import { Location, LocationsService, Reading, ReadingsService } from '@openapi';
+import { rotate, unsubscribeAll } from '@common';
+import { ListenersService } from './listeners.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GlobalService {
+  private _mode: Mode = Mode.temperature;
+  private _location: string = '';
+  private _subscriptions: Record<string, Subscription> = {};
 
-  constructor(private readonly apiService:ApiService, private readonly mqttService:MqttService) { }
+  public mode$: Subject<Mode> = new Subject<Mode>();
+  public location$: Subject<string> = new Subject<string>();
+  public locations:Location[] = [];
 
-  public getCurrent(location: string,startDate:Date): Observable<LocationReading[]> {
-    const mqtt$ = this.mqttService.observe('gimel/sensor/all').pipe(
-      map(mqttMessage => {
-        const data = JSON.parse(mqttMessage.payload.toString()) as Reading;
-        const locationReading = {
-          ...data,
-          location:location
-        } as LocationReading;
-        return [locationReading]
-      })
-    );
+  public get mode(): Mode {
+    return this._mode;
+  }
 
-    const http$ = this.apiService.getReadings(location,startDate,new Date())
+  public set mode(value: Mode) {
+    this._mode = value;
+    this.mode$.next(value);
+  }
 
-    const result$ = merge(http$,mqtt$);
+  public get location(): string {
+    return this._location;
+  }
 
-    return result$;
+  public set location(value: string) {
+    this._location = value;
+    this.location$.next(value);
+  }
+
+
+  constructor(
+    locationService: LocationsService,
+  ) {
+    locationService.getLocations().subscribe((locations) => {
+      if (locations && locations.length > 0) {
+        this.location = locations[0].name;
+        this.locations = locations;
+      }
+    });
+  }
+
+  public destroy(): void {
+    unsubscribeAll(this._subscriptions);
   }
 }

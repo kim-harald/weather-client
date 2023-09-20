@@ -1,0 +1,24 @@
+GET https://kimharald.no/api/weather/readings/dalet/1695012846645/1694995200000
+
+Accept: application/json
+Content-Type: application/json 
+
+####
+
+GET https://kimharald.no/api/weather/stats/zayin/30Days
+
+Accept: application/json
+Content-Type: application/json 
+
+
+
+####
+
+
+GET https://localhost:8316/api/weather/stats/dalet/1Month
+
+Accept: application/json
+Content-Type: application/json 
+
+
+####

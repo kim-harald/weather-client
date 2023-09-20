@@ -1,0 +1,35 @@
+<div class="chart-section">
+  <div class="chart-container">
+    <app-weather-chart
+      [class]="globalService.mode === 'temperature' ? 'visible' : 'hidden'"
+      title=""
+      [data]="DetailDataRows['temperature']"
+      [max]="chartOptions['temperature'].max"
+      [min]="chartOptions['temperature'].min"
+      [colors]="['Red']"
+      [width]="1200"
+      [columns]="['Time', 'C']"
+    ></app-weather-chart>
+    <app-weather-chart
+      title=""
+      [class]="globalService.mode === 'pressure' ? 'visible' : 'hidden'"
+      [data]="DetailDataRows['pressure']"
+      [max]="chartOptions['pressure'].max"
+      [min]="chartOptions['pressure'].min"
+      [colors]="['Yellow']"
+      [columns]="['Time', 'hPa']"
+      [width]="1200"
+    ></app-weather-chart>
+    <app-weather-chart
+      title=""
+      [class]="globalService.mode === 'humidity' ? 'visible' : 'hidden'"
+      [data]="DetailDataRows['humidity']"
+      [max]="chartOptions['humidity'].max"
+      [min]="chartOptions['humidity'].min"
+      [colors]="['Blue']"
+      [columns]="['Time', '%']"
+      [width]="1200"
+    >
+    </app-weather-chart>
+  </div>
+</div>
