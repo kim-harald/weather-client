@@ -51,6 +51,7 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.setInitialData();
+    // this.setMqttListen();
   }
 
   ngOnDestroy(): void {
@@ -65,8 +66,9 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
       concatMap(locations => {
         const x: Record<string, Observable<Reading[]>> = {};
         const readings$ =
-          locations.forEach(l =>
-            x[l.name] = this.readingService.getReadings(l.name, start.valueOf(), end.valueOf()));
+          locations.forEach(location =>
+            x[location.name] = this.readingService.getReadings(location.name, start.valueOf(), end.valueOf()));
+            this.setMqttListen(locations);
         return forkJoin(x);
       })
     )
@@ -97,23 +99,15 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  private setMqttListen():void {
-    this.locationService.getLocations().pipe(
-      concatMap(locations => {
-        const listen$:Record<string, Observable<Reading>> = {};
-        locations.forEach(l => {
-          listen$[l.name] = this.listenersService.reading(l.name);
-        });
-        return forkJoin(listen$);
+  private setMqttListen(locations: Location[]): void {
+    locations.map(l => l.name).forEach((location) => {
+      this._subscriptions[`mqtt:${location}`] = this.listenersService.reading(location).subscribe({
+        next: reading => {
+          rotate(this._readings[location], reading, this.span);
+          console.log(location);
+        },
+        error: err => console.error(err)
       })
-    ).subscribe({
-      next: data => {
-        Object.keys(data).forEach(key => {
-          rotate(this._readings[key],data[key],this.span);
-          const reading = data[key];
-          this.DetailDataRows = convertToDataRows(this._readings[key], key, '5min');
-        });
-      }
-    })
+    });
   }
 }

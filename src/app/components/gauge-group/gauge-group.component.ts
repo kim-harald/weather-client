@@ -22,24 +22,24 @@ const k_Samples = 6*10;
 export class GaugeGroupComponent implements OnInit, OnDestroy {
   public MODE = Mode;
 
-  public sample: Record<Mode, number> = {
-    temperature: 0,
-    humidity: 0,
-    pressure: 0,
+  public sample: Record<Mode, Record<string,number>> = {
+    temperature: {},
+    humidity: {},
+    pressure: {},
   };
 
-  public trend: Record<Mode, number> = {
-    temperature: 0,
-    humidity: 0,
-    pressure: 0,
+  public trend: Record<Mode, Record<string,number>> = {
+    temperature: {},
+    humidity: {},
+    pressure: {},
   };
 
   private _subscriptions: Record<string, Subscription> = {};
 
-  private samples:Record<Mode, {value:number,ts:number}[]> = {
-    temperature: [],
-    humidity: [],
-    pressure: [],
+  private samples:Record<Mode, Record<string,{value:number,ts:number}[]>> = {
+    temperature: {},
+    humidity: {},
+    pressure: {},
   }
 
   private now = new Date().valueOf();
@@ -62,16 +62,17 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
   private setup(location:string):void {
     Object.keys(Mode).forEach(item => {
       const mode = item as Mode;
+      this.samples[mode][location] = [];
       this._subscriptions[mode as Mode] = this.listenService.sample(location, mode)
         .subscribe((value) => {
-          this.sample[mode as Mode] = convertValue(mode,value);
+          this.sample[mode as Mode][location] = convertValue(mode,value);
           const sample = {value,ts: new Date().valueOf()};
-          rotate(this.samples[mode],sample,k_Samples);
-          const points = this.samples[mode].map(s => {
+          rotate(this.samples[mode][location],sample,k_Samples);
+          const points = this.samples[mode][location].map(s => {
             const ts = (s.ts - this.now)/ 1000;
             return {x:s.value, y:ts};
           })
-          this.trend[mode] = trendline(points).a;
+          this.trend[mode][location] = trendline(points).a;
         });
     });
   }
@@ -89,11 +90,14 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
 const buildSamples = (
   readings: Reading[],
   n: number
-): Record<string, number[]> => {
-  const result: Record<string, number[]> = {};
-  result['temperature'] = [];
-  result['pressure'] = [];
-  result['humidity'] = [];
+): Record<Mode, number[]> => {
+  const result: Record<Mode, number[]> = {
+    [Mode.temperature] : [],
+    [Mode.pressure] : [],
+    [Mode.humidity] : [],
+    
+  };
+  
   const samples = rounded(n / readings.length, 0);
 
   readings.forEach((reading) => {

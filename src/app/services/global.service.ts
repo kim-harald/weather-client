@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { DateRange, Mode } from '@models';
-import { LocationsService, Reading, ReadingsService } from '@openapi';
+import { Location, LocationsService, Reading, ReadingsService } from '@openapi';
 import { rotate, unsubscribeAll } from '@common';
 import { ListenersService } from './listeners.service';
 
@@ -15,6 +15,7 @@ export class GlobalService {
 
   public mode$: Subject<Mode> = new Subject<Mode>();
   public location$: Subject<string> = new Subject<string>();
+  public locations:Location[] = [];
 
   public get mode(): Mode {
     return this._mode;
@@ -41,6 +42,7 @@ export class GlobalService {
     locationService.getLocations().subscribe((locations) => {
       if (locations && locations.length > 0) {
         this.location = locations[0].name;
+        this.locations = locations;
       }
     });
   }
