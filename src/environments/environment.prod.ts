@@ -1,9 +1,11 @@
 export const environment = {
-	production: false,
-	hmr: false,
-	  mqtt: {
-		  server: 'kimharald.no',
-		  protocol: "wss",
-		  port: 8083
-	  }
-  };
+  production: true,
+  hmr: false,
+  mqtt: {
+    server: 'kimharald.no',
+    protocol: 'wss',
+    port: 8083,
+  },
+};
+
+import 'zone.js/plugins/zone-error'; // Included with Angular CLI.

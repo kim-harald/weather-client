@@ -36,14 +36,14 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public value = 0;
   constructor(
-    private readonly deviceService: DeviceDetectorService,
+    // private readonly deviceService: DeviceDetectorService,
     private readonly locationService: LocationsService,
     private readonly globalService: GlobalService
   ) {}
 
   // init
   public ngOnInit(): void {
-    this.isMobile = this.deviceService.isMobile();
+    this.isMobile = false //this.deviceService.isMobile();
   }
 
   public ngAfterViewInit(): void {
