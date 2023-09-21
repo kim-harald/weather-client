@@ -13,8 +13,6 @@ import {
 } from '@openapi';
 import { GlobalService } from './services/global.service';
 
-
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -25,16 +23,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   public allSummary: SummaryReading = {} as SummaryReading;
   public mode: Mode = Mode.temperature;
 
-  public rounded = rounded;
-
-  public temperature: number = 0;
-  public pressure: number = 0;
-  public humidity: number = 0;
-
-  public trendTemperature: number = 0;
-  public trendPressure: number = 0;
-  public trendHumidity: number = 0;
-
   public isMobile: boolean = false;
 
   public locations: Location[] = [];
@@ -43,8 +31,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   public STATSPAN = StatSpan;
 
   public range: { min: number; max: number } = { min: -40, max: 40 };
-
-
 
   public isReady: boolean = false;
 
@@ -73,8 +59,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 }
-
-
 
 const getRange = (
   values: number[],

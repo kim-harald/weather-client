@@ -6,7 +6,15 @@ import {
   OnInit,
 } from '@angular/core';
 import { GlobalService, ListenersService } from '@services';
-import { Observable, Subject, Subscription, concatMap, forkJoin, map, of } from 'rxjs';
+import {
+  Observable,
+  Subject,
+  Subscription,
+  concatMap,
+  forkJoin,
+  map,
+  of,
+} from 'rxjs';
 import {
   kChartOptions,
   convertToDataRows,
@@ -43,7 +51,8 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
     public readonly globalService: GlobalService,
     private readonly readingService: ReadingsService,
     private readonly locationService: LocationsService,
-    private readonly listenersService: ListenersService) { }
+    private readonly listenersService: ListenersService
+  ) {}
 
   ngOnInit(): void {
     // this.init();
@@ -62,28 +71,35 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
     const start = new Date();
     const end = new Date();
     start.setMinutes(start.getMinutes() - 120);
-    this._subscriptions['readings'] = this.locationService.getLocations().pipe(
-      concatMap(locations => {
-        const x: Record<string, Observable<Reading[]>> = {};
-        const readings$ =
-          locations.forEach(location =>
-            x[location.name] = this.readingService.getReadings(location.name, start.valueOf(), end.valueOf()));
-            this.setMqttListen(locations);
-        return forkJoin(x);
-      })
-    )
+    this._subscriptions['readings'] = this.locationService
+      .getLocations()
+      .pipe(
+        concatMap((locations) => {
+          const readings$: Record<string, Observable<Reading[]>> = {};
+          locations.forEach((location) => {
+            readings$[location.name] = this.readingService.getReadings(
+              location.name,
+              start.valueOf(),
+              end.valueOf()
+            );
+          });
+
+          this.setMqttListen(locations);
+          return forkJoin(readings$);
+        })
+      )
       .subscribe({
         next: (readingsArr) => {
-          Object.keys(readingsArr).forEach(key => {
+          Object.keys(readingsArr).forEach((key) => {
             this._readings[key] = readingsArr[key];
           });
         },
-        error: err => {
+        error: (err) => {
           console.error(err);
         },
         complete: () => {
           this._isReady$.next();
-        }
+        },
       });
 
     this._subscriptions['ready'] = this._isReady$.subscribe({
@@ -91,23 +107,29 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
         const l = this.globalService.location;
         this.DetailDataRows = convertToDataRows(this._readings[l], l, '5min');
       },
-      error: err => console.error(err)
+      error: (err) => console.error(err),
     });
 
-    this._subscriptions['location'] = this.globalService.location$.subscribe(l => {
-      this.DetailDataRows = convertToDataRows(this._readings[l], l, '5min');
-    });
+    this._subscriptions['location'] = this.globalService.location$.subscribe(
+      (l) => {
+        this.DetailDataRows = convertToDataRows(this._readings[l], l, '5min');
+      }
+    );
   }
 
   private setMqttListen(locations: Location[]): void {
-    locations.map(l => l.name).forEach((location) => {
-      this._subscriptions[`mqtt:${location}`] = this.listenersService.reading(location).subscribe({
-        next: reading => {
-          rotate(this._readings[location], reading, this.span);
-          console.log(location);
-        },
-        error: err => console.error(err)
-      })
-    });
+    locations
+      .map((location) => location.name)
+      .forEach((name) => {
+        this._subscriptions[`mqtt:${name}`] = this.listenersService
+          .reading(name)
+          .subscribe({
+            next: (reading) => {
+              rotate(this._readings[name], reading, this.span);
+              console.log(name);
+            },
+            error: (err) => console.error(err),
+          });
+      });
   }
 }

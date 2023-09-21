@@ -22,6 +22,8 @@
   ></app-stats>
 </div>
 <app-select-location [locations]="locations"></app-select-location>
-<app-detail></app-detail>
-<app-summary [summaryType]="'hour'" [span]="48"></app-summary>
-<app-summary [summaryType]="'day'" [span]="60"></app-summary>
+<ng-container *ngIf="!isMobile">
+  <app-detail [span]="120"></app-detail>
+  <app-summary [summaryType]="'hour'" [span]="48"></app-summary>
+  <app-summary [summaryType]="'day'" [span]="60"></app-summary>
+</ng-container>
