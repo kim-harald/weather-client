@@ -60,14 +60,16 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.setInitialData();
-    // this.setMqttListen();
+    this.globalService.locations$.subscribe(locations => {
+      this.setMqttListen(locations)
+    })
   }
 
   ngOnDestroy(): void {
     unsubscribeAll(this._subscriptions);
   }
 
-  private setInitialData(): void {
+  private setInitialData_old(): void {
     const start = new Date();
     const end = new Date();
     start.setMinutes(start.getMinutes() - 120);
@@ -115,6 +117,35 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
         this.DetailDataRows = convertToDataRows(this._readings[l], l, '5min');
       }
     );
+  }
+
+  private setInitialData(): void {
+    this.globalService.readings$.subscribe({
+      next: (data) => {
+        this._readings = data;
+        this.DetailDataRows = convertToDataRows(
+          this._readings[this.globalService.location],
+          this.globalService.location,
+          '5min'
+        );
+      },
+      error: (err) => console.error(err),
+      complete: () => {
+        console.info('Complete init');
+      },
+    });
+
+    this.globalService.location$.subscribe({
+      next: (location) => {
+        this.DetailDataRows = convertToDataRows(
+          this._readings[this.globalService.location],
+          this.globalService.location,
+          '5min'
+        );
+      },
+      error: (err) => console.error(err),
+      complete: () => {},
+    });
   }
 
   private setMqttListen(locations: Location[]): void {
