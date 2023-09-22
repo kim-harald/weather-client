@@ -338,3 +338,16 @@ export const getDateRange = (statspan: StatSpan): DateRange => {
 
   return new DateRange(startDate, endDate);
 }
+
+export const getRange = (
+  values: number[],
+  multiplier: number = 5
+): { min: number; max: number } => {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  return {
+    min: Math.floor(min / multiplier) * multiplier,
+    max: Math.ceil(max / multiplier) * multiplier,
+  };
+};
