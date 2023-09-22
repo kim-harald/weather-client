@@ -13,6 +13,7 @@ import {
   concatMap,
   forkJoin,
   map,
+  merge,
   of,
 } from 'rxjs';
 import {
@@ -135,8 +136,9 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
       },
     });
 
-    this.globalService.location$.subscribe({
-      next: (location) => {
+    this.globalService.location$
+    .subscribe({
+      next: () => {
         this.DetailDataRows = convertToDataRows(
           this._readings[this.globalService.location],
           this.globalService.location,
@@ -149,6 +151,7 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setMqttListen(locations: Location[]): void {
+    let counter = locations.length;
     locations
       .map((location) => location.name)
       .forEach((name) => {
@@ -158,6 +161,15 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
             next: (reading) => {
               rotate(this._readings[name], reading, this.span);
               console.log(name);
+              counter--;
+              if (counter === 0) {
+                this.DetailDataRows = convertToDataRows(
+                  this._readings[this.globalService.location],
+                  this.globalService.location,
+                  '5min'
+                );
+                counter = locations.length;
+              }
             },
             error: (err) => console.error(err),
           });
