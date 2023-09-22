@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { DeviceDetectorService } from 'ngx-device-detector';
 import { rotate, rounded } from '@common';
 import { DataRow } from './models/datarow';
 import { Mode } from './models/mode';
@@ -12,6 +11,7 @@ import {
   StatSpan,
 } from '@openapi';
 import { GlobalService } from './services/global.service';
+import { DetectorService } from './services/detector.service';
 
 @Component({
   selector: 'app-root',
@@ -38,12 +38,15 @@ export class AppComponent implements OnInit, AfterViewInit {
   constructor(
     // private readonly deviceService: DeviceDetectorService,
     private readonly locationService: LocationsService,
-    private readonly globalService: GlobalService
-  ) {}
+    private readonly globalService: GlobalService,
+    detectorService: DetectorService
+  ) {
+    this.isMobile = detectorService.isMobile;
+  }
 
   // init
   public ngOnInit(): void {
-    this.isMobile = false //this.deviceService.isMobile();
+    
   }
 
   public ngAfterViewInit(): void {
@@ -51,7 +54,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   public init() {
-    this.locationService.getLocations().subscribe((locations) => {
+    this.globalService.locations$.subscribe((locations) => {
       this.locations = locations;
       if (locations && locations.length > 0) {
         this.globalService.location = locations[1].name;
@@ -59,16 +62,3 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 }
-
-const getRange = (
-  values: number[],
-  multiplier: number = 5
-): { min: number; max: number } => {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-
-  return {
-    min: Math.floor(min / multiplier) * multiplier,
-    max: Math.ceil(max / multiplier) * multiplier,
-  };
-};
