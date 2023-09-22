@@ -23,7 +23,6 @@
     "@angular/router": "^14.2.8",
     "angular-google-charts": "^2.2.3",
     "check-updates": "^0.0.1",
-    "ngx-device-detector": "^4.0.1",
     "ngx-mqtt": "^9.0.5",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
