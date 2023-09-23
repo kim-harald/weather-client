@@ -56,7 +56,7 @@ export class GlobalService {
         if (locations && locations.length > 0) {
           this.location = locations[0].name;
           this.locations = locations;
-          this.locations$.next(locations);
+          this.locations$.next(locations.filter(o => o.name !== 'gimel'));
         }
       });
 

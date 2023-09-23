@@ -70,56 +70,6 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
     unsubscribeAll(this._subscriptions);
   }
 
-  private setInitialData_old(): void {
-    const start = new Date();
-    const end = new Date();
-    start.setMinutes(start.getMinutes() - 120);
-    this._subscriptions['readings'] = this.locationService
-      .getLocations()
-      .pipe(
-        concatMap((locations) => {
-          const readings$: Record<string, Observable<Reading[]>> = {};
-          locations.forEach((location) => {
-            readings$[location.name] = this.readingService.getReadings(
-              location.name,
-              start.valueOf(),
-              end.valueOf()
-            );
-          });
-
-          this.setMqttListen(locations);
-          return forkJoin(readings$);
-        })
-      )
-      .subscribe({
-        next: (readingsArr) => {
-          Object.keys(readingsArr).forEach((key) => {
-            this._readings[key] = readingsArr[key];
-          });
-        },
-        error: (err) => {
-          console.error(err);
-        },
-        complete: () => {
-          this._isReady$.next();
-        },
-      });
-
-    this._subscriptions['ready'] = this._isReady$.subscribe({
-      next: () => {
-        const l = this.globalService.location;
-        this.DetailDataRows = convertToDataRows(this._readings[l], l, '5min');
-      },
-      error: (err) => console.error(err),
-    });
-
-    this._subscriptions['location'] = this.globalService.location$.subscribe(
-      (l) => {
-        this.DetailDataRows = convertToDataRows(this._readings[l], l, '5min');
-      }
-    );
-  }
-
   private setInitialData(): void {
     this.globalService.readings$.subscribe({
       next: (data) => {
