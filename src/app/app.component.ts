@@ -36,8 +36,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public value = 0;
   constructor(
-    // private readonly deviceService: DeviceDetectorService,
-    private readonly locationService: LocationsService,
     private readonly globalService: GlobalService,
     detectorService: DetectorService
   ) {
