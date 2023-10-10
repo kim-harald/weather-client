@@ -13,9 +13,9 @@ import {
   unsubscribeAll,
 } from '@common';
 import { Mode } from '@models';
-import { LocationsService, Reading } from '@openapi';
+import { Reading } from '@openapi';
 import { ListenersService } from '@services';
-import { Subscription, concatMap, tap } from 'rxjs';
+import { Subject, Subscription, concatMap, takeUntil } from 'rxjs';
 import { GlobalService } from 'src/app/services/global.service';
 
 const k_Samples = 6 * 5;
@@ -41,6 +41,7 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
   };
 
   private _subscriptions: Record<string, Subscription> = {};
+  private destroy: Subject<void> = new Subject<void>();
 
   private samples: Record<
     Mode,
@@ -112,6 +113,12 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
   }
 }
 
+/**
+ * Computes seed samples from reading array
+ * @param readings Readings array
+ * @param n Number of total samples (120)
+ * @returns Array of samples
+ */
 const buildSamples = (
   location:string,
   readings: Record<string,Reading[]>,
@@ -155,3 +162,4 @@ const buildSamples = (
 
   return result;
 };
+
