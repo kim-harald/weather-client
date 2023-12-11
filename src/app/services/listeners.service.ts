@@ -37,10 +37,19 @@ export class ListenersService {
     );
   }
 
-  public summary(): Observable<number> {
+  public summary(): Observable<string> {
     return this.mqttService.observe('summary').pipe(
       map((iqttMessage) => {
-        return JSON.parse(iqttMessage.payload.toString()) as number;
+        return JSON.parse(iqttMessage.payload.toString()) as string;
+      })
+    );
+  }
+
+  public trend(location:string):Observable<Record<string,number>> {
+    const path = `${location}/sensor/trend`;
+    return this.mqttService.observe(path).pipe(
+      map(iqttMessage => {
+        return JSON.parse(iqttMessage.payload.toString()) as Record<string,number>
       })
     );
   }

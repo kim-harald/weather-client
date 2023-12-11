@@ -4,7 +4,7 @@
   [max]="40"
   [color]="'rgba(200,50,50,0.4)'"
   [value]="sample[MODE.temperature][globalService.location]"
-  [delta]="trend[MODE.temperature][globalService.location]"
+  [delta]="trend[MODE.temperature][globalService.location] ?? 0"
   (click)="handleClick(MODE.temperature)"
 >
 </app-weather-gauge>
@@ -14,7 +14,7 @@
   [max]="1100"
   [color]="'rgba(200,200,0,0.4)'"
   [value]="sample[MODE.pressure][globalService.location]"
-  [delta]="trend[MODE.pressure][globalService.location]"
+  [delta]="trend[MODE.pressure][globalService.location] ?? 0"
   (click)="handleClick(MODE.pressure)"
 >
 </app-weather-gauge>
@@ -25,7 +25,7 @@
   [max]="100"
   [color]="'rgba(50,50,200,0.4)'"
   [value]="sample[MODE.humidity][globalService.location]"
-  [delta]="trend[MODE.humidity][globalService.location]"
+  [delta]="trend[MODE.humidity][globalService.location] ?? 0"
   (click)="handleClick(MODE.humidity)"
 >
 </app-weather-gauge>

@@ -4,7 +4,7 @@ import { Observable, Subject, Subscription, concatMap, map, of } from 'rxjs';
 import { SummaryReading, SummaryReadings, SummaryService } from '@openapi';
 import { DataRow, Mode, SummaryType } from '@models';
 import { convertToDataRows, kChartOptions, unsubscribeAll } from '@common';
-import { GlobalService } from '@services';
+import { GlobalService, ListenersService } from '@services';
 
 @Component({
   selector: 'app-summary',
@@ -31,9 +31,9 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly summaryService: SummaryService,
-    private readonly mqttService: MqttService,
+    private readonly listenersService: ListenersService,
     public readonly globalService: GlobalService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this._subscriptions['location'] = this.globalService.location$.subscribe({
@@ -57,10 +57,11 @@ export class SummaryComponent implements OnInit, OnDestroy {
       error: console.error,
     });
 
-    this._subscriptions[`${location}-mqtt`] = this.mqttService
-      .observe('summary')
-      .pipe(concatMap(() => this.getSummary(location, this.summaryType)))
-      .subscribe({
+    this._subscriptions[`${location}-mqtt`] = this.listenersService
+      .summary()
+      .pipe(
+        concatMap(summaryLocation => this.getSummary(summaryLocation, this.summaryType))
+      ).subscribe({
         next: (summaryData) => {
           this.DataRows = convertToDataRows(
             summaryData,

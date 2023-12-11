@@ -9,7 +9,6 @@ import {
   convertValue,
   rotate,
   rounded,
-  trendline,
   unsubscribeAll,
 } from '@common';
 import { Mode } from '@models';
@@ -17,8 +16,6 @@ import { Reading } from '@openapi';
 import { ListenersService } from '@services';
 import { Subject, Subscription, concatMap, takeUntil } from 'rxjs';
 import { GlobalService } from 'src/app/services/global.service';
-
-const k_Samples = 6 * 5;
 
 @Component({
   selector: 'app-gauge-group',
@@ -34,7 +31,7 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
     pressure: {},
   };
 
-  public trend: Record<Mode, Record<string, number>> = {
+  public trend: Record<Mode, Record<string, number | undefined | null>> = {
     temperature: {},
     humidity: {},
     pressure: {},
@@ -47,10 +44,10 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
     Mode,
     Record<string, { value: number; ts: number }[]>
   > = {
-    temperature: {},
-    humidity: {},
-    pressure: {},
-  };
+      temperature: {},
+      humidity: {},
+      pressure: {},
+    };
 
   private now = new Date().valueOf();
 
@@ -60,25 +57,9 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
   constructor(
     public readonly globalService: GlobalService,
     private readonly listenService: ListenersService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.globalService.readings$.subscribe((readings) => {
-        Object.keys(readings).forEach((location) => {
-          const samples = buildSamples(location,readings,k_Samples);
-          Object.keys(Mode).forEach(key => {
-            const mode = key as Mode;
-            this.samples[mode][location] = samples[mode];
-
-            const points = this.samples[mode][location].map((s) => {
-              const ts = (s.ts - this.now) / 1000;
-              return { x: s.value, y: ts };
-            });
-            this.trend[mode][location] = trendline(points).a;
-          })
-        });
-    });
-
     this.globalService.location$.subscribe({
       next: (location) => this.setup(location),
       error: (err) => console.error(err),
@@ -93,14 +74,10 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
         .sample(location, mode)
         .subscribe((value) => {
           this.sample[mode as Mode][location] = convertValue(mode, value);
-          const sample = { value, ts: new Date().valueOf() };
-          rotate(this.samples[mode][location], sample, k_Samples);
-          const points = this.samples[mode][location].map((s) => {
-            const ts = (s.ts - this.now) / 1000;
-            return { x: s.value, y: ts };
-          });
-          this.trend[mode][location] = trendline(points).a;
         });
+      this.listenService.trend(location).subscribe(data => {
+        this.trend[mode][location] = data[mode];
+      })
     });
   }
 
@@ -113,53 +90,4 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
   }
 }
 
-/**
- * Computes seed samples from reading array
- * @param readings Readings array
- * @param n Number of total samples (120)
- * @returns Array of samples
- */
-const buildSamples = (
-  location:string,
-  readings: Record<string,Reading[]>,
-  n: number
-): Record<Mode, { value: number; ts: number }[]> => {
-  const result: Record<Mode, { value: number; ts: number }[]> = {
-    [Mode.temperature]: [],
-    [Mode.pressure]: [],
-    [Mode.humidity]: [],
-  };
-
-  if (readings[location].length === 0) {
-    return result;
-  }
-  const locationReadings = readings[location];
-  
-  const incr = rounded((locationReadings[locationReadings.length-1].ts - locationReadings[0].ts) / n,0);
-  let ts =locationReadings[0].ts;
-    
-  locationReadings.forEach((reading) => {
-    for (let i = 0; i < n; i++) {
-      result['temperature'] = rotate(
-        result['temperature'],
-        {value: reading.temperature, ts},
-        k_Samples
-      );
-      result['pressure'] = rotate(
-        result['pressure'],
-        {value: reading.pressure, ts},
-        k_Samples
-      );
-      result['humidity'] = rotate(
-        result['humidity'],
-        {value: reading.humidity, ts},
-        k_Samples
-      );
-
-      ts += incr;
-    }
-  });
-
-  return result;
-};
 
