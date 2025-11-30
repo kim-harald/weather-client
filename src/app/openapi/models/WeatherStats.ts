@@ -8,10 +8,11 @@ import type { ReadingStat } from './ReadingStat';
 import type { Stat } from './Stat';
 
 export type WeatherStats = (Stat & {
-timestamp: number;
-humidity: ReadingStat;
-pressure: ReadingStat;
-temperature: ReadingStat;
-location: string;
-dateRange: DateRange;
+    timestamp: number;
+    humidity: ReadingStat;
+    pressure: ReadingStat;
+    temperature: ReadingStat;
+    location: string;
+    dateRange: DateRange;
 });
+

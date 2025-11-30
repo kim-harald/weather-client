@@ -1,20 +1,7 @@
 {
-  "/api/*": {
+  "/api": {
     "target": "https://kimharald.no",
-    "secure": false,
-    "logLevel": "debug",
-    "changeOrigin": true,
-    "pathRewrite": {
-      "^/api": "https://kimharald.no/api"
-    }
-  },
-  "/remote/api/*": {
-    "target": "https://gimel",
-    "secure": false,
-    "logLevel": "debug",
-    "changeOrigin": true,
-    "pathRewrite": {
-      "^/api": "https://gimel/api"
-    }
+    "secure": true,
+    "changeOrigin": true
   }
 }

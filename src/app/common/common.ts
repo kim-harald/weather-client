@@ -1,10 +1,11 @@
-import { Subscription } from 'rxjs';
-import { Reading, StatSpan, SummaryReading, WeatherStats } from '@openapi';
+import { Reading, SummaryReading, WeatherStats } from '@openapi';
+
 import './string.extensions';
-import { Mode, Modes } from '../models/mode';
+import { Mode, Modes } from '@models';
 import { DataRow } from '../models/datarow';
 import { SummaryType } from '../models/SummaryType';
 import { DateRange } from '../models/daterange';
+import { StatSpan } from '../models/stats/statspan';
 
 export const cKelvinOffset = 273.15;
 
@@ -38,14 +39,14 @@ export const rounded = (v: number, n: number): number => {
 };
 
 export const sortReadings = (a: Reading, b: Reading): number => {
-  return a?.ts - b?.ts ?? 0;
+  return a?.ts ?? 0 - b?.ts ?? 0;
 };
 
-export const unique = (arr: any[]): string[] => {
+export const unique = <T>(arr: T[]): T[] => {
   const result = arr.filter(
     (item, i, arr) => arr.findIndex((t) => t === item) === i
   );
-  return result as string[];
+  return result;
 };
 
 export const proper = (str: string) => {
@@ -223,17 +224,6 @@ export const normaliseWeatherStats = (
   };
 };
 
-export const unsubscribeAll = (
-  subscriptions: Record<string, Subscription>
-) => {
-  Object.keys(subscriptions).forEach(key => {
-    const subscription = subscriptions[key];
-    if (subscription && !subscription.closed) {
-      subscription.unsubscribe();
-    }
-  });
-};
-
 export const convertToDataRows = (
   data: Reading[] | SummaryReading[],
   location: string,
@@ -248,36 +238,32 @@ export const convertToDataRows = (
   if (!data || data.length === 0) {
     return result;
   }
-  const items = 
-    summaryType === '5min'
-      ? (data as Reading[]).filter(item => item.location === location)
-      : (data as SummaryReading[]).filter(item => item.location === location);
+  
+  const items = summaryType === '5min'
+    ? (data as Reading[]).filter(item => item.location === location)
+    : (data as SummaryReading[]).filter(item => item.location === location);
 
   Modes.forEach((s) => {
     const mode = s as Mode;
-    const values = items.map((item: any) => {
+    const values = items.map((item) => {
       switch (summaryType) {
         case '5min':
+          const reading = item as Reading;
           return {
-            when: convertTime((item as Reading).ts),
-            value: convertValue(mode, (item as any)[mode]),
+            when: convertTime(reading.ts),
+            value: convertValue(mode, reading[mode]),
           };
         case 'hour':
-          return {
-            when: convertTime((item as any).ts),
-            value: [
-              convertValue(mode, (item as any)[mode]?.max ?? 0),
-              convertValue(mode, (item as any)[mode]?.mean ?? 0),
-              convertValue(mode, (item as any)[mode]?.min ?? 0),
-            ],
-          };
         case 'day':
+          const summary = item as SummaryReading;
           return {
-            when: convertDate((item as any).ts),
+            when: summaryType === 'hour' 
+              ? convertTime(summary.ts) 
+              : convertDate(summary.ts),
             value: [
-              convertValue(mode, (item as any)[mode]?.max ?? 0),
-              convertValue(mode, (item as any)[mode]?.mean ?? 0),
-              convertValue(mode, (item as any)[mode]?.min ?? 0),
+              convertValue(mode, summary[mode]?.max ?? 0),
+              convertValue(mode, summary[mode]?.mean ?? 0),
+              convertValue(mode, summary[mode]?.min ?? 0),
             ],
           };
       }
@@ -299,17 +285,16 @@ export const convertValue = (mode: Mode, value: number): number => {
   }
 };
 
-export const rotate = (
-  values: any[],
-  value: any,
+export const rotate = <T>(
+  values: T[],
+  value: T,
   limit: number = 30
-): any[] => {
+): T[] => {
   values ??= [];
   values.push(value);
   if (values.length > limit) {
     values.splice(0, 1);
   }
-  //console.info(values);
   return values;
 };
 
@@ -317,21 +302,21 @@ export const getDateRange = (statspan: StatSpan): DateRange => {
   const endDate = new Date();
   const startDate = new Date();
   switch (statspan) {
-    case StatSpan.ALL: {
+    case 'All': {
       return new DateRange(new Date(0, 0, 0), endDate);
     }
 
-    case StatSpan._90DAYS: {
-      startDate.setDate(startDate.getDate() - 90);
+    case '3Month': {
+      startDate.setMonth(startDate.getMonth() - 3);
       break;
     }
 
-    case StatSpan._30DAYS: {
-      startDate.setDate(startDate.getDate() - 24);
+    case '1Month': {
+      startDate.setMonth(startDate.getMonth() - 1);
       break;
     }
 
-    case StatSpan._24HRS: {
+    case '24Hrs': {
       startDate.setHours(startDate.getHours() - 24);
     }
   }

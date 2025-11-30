@@ -13,7 +13,7 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class SummaryService {
 
@@ -28,10 +28,10 @@ export class SummaryService {
      * @throws ApiError
      */
     public getHourlySummary(
-location: string,
-start: number,
-end: number,
-): Observable<SummaryReadings> {
+        location: string,
+        start: number,
+        end: number,
+    ): Observable<SummaryReadings> {
         return __request(OpenAPI, this.http, {
             method: 'GET',
             url: '/summary/hourly/{location}/{start}/{end}',
@@ -45,7 +45,7 @@ end: number,
 
     /**
      *
- * Returns a daily summary for the given location and date time range.
+     * Returns a daily summary for the given location and date time range.
      * @param location Location to report on
      * @param start timestamp
      * @param end timestamp
@@ -53,10 +53,10 @@ end: number,
      * @throws ApiError
      */
     public getDailySummary(
-location: string,
-start: number,
-end: number,
-): Observable<SummaryReadings> {
+        location: string,
+        start: number,
+        end: number,
+    ): Observable<SummaryReadings> {
         return __request(OpenAPI, this.http, {
             method: 'GET',
             url: '/summary/daily/{location}/{start}/{end}',
@@ -75,13 +75,41 @@ end: number,
      * @throws ApiError
      */
     public getTotalSummary(
-location: string,
-): Observable<SummaryReading> {
+        location: string,
+    ): Observable<SummaryReading> {
         return __request(OpenAPI, this.http, {
             method: 'GET',
             url: '/summary/all/{location}',
             path: {
                 'location': location,
+            },
+        });
+    }
+
+    /**
+     * Recomputes all summary values for a given summary type, location, and date range.
+     * This recalculates the aggregated values from source readings.
+     * @param summaryType The type of summary ('daily' or 'hourly')
+     * @param location Location to recompute summaries for
+     * @param start Start timestamp
+     * @param end End timestamp
+     * @returns number The number of updated records
+     * @throws ApiError
+     */
+    public recomputeSummaries(
+        summaryType: string,
+        location: string,
+        start: number,
+        end: number,
+    ): Observable<number> {
+        return __request(OpenAPI, this.http, {
+            method: 'POST',
+            url: '/summary/recompute/{summaryType}/{location}/{start}/{end}',
+            path: {
+                'summaryType': summaryType,
+                'location': location,
+                'start': start,
+                'end': end,
             },
         });
     }

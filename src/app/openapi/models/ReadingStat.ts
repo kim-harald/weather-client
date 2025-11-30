@@ -10,3 +10,4 @@ export type ReadingStat = {
     min: Reading;
     max: Reading;
 };
+

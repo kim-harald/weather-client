@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { ChartType, Column, GoogleChartComponent } from 'angular-google-charts';
+import { CommonModule } from '@angular/common';
+import { ChartType, Column, GoogleChartComponent, GoogleChartsModule } from 'angular-google-charts';
 import { timeStamp } from 'console';
 import { convertTime } from 'src/app/common/common';
 import { DataRow } from 'src/app/models/datarow';
@@ -7,6 +8,8 @@ import { isArray } from 'util';
 
 @Component({
   selector: 'app-weather-chart',
+  standalone: true,
+  imports: [CommonModule, GoogleChartsModule],
   templateUrl: './weather-chart.component.html',
   styleUrls: ['./weather-chart.component.scss'],
 })

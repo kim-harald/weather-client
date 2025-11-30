@@ -1,10 +1,13 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { GlobalService } from '@services';
 import { Location } from 'src/app/openapi/models/Location';
 
 
 @Component({
   selector: 'app-select-location',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './select-location.component.html',
   styleUrls: ['./select-location.component.scss'],
 })

@@ -9,3 +9,4 @@
 export type Stat = {
     id: any;
 };
+

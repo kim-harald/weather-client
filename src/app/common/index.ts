@@ -21,7 +21,8 @@ export {
   toKelvin,
   trendline,
   unique,
-  unsubscribeAll,
+  getDateRange,
+  getRange,
 } from './common';
 
 export { kChartOptions, kChartOptionsType } from './settings';

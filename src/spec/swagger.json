@@ -1,4 +1,5 @@
 {
+	"openapi": "3.0.0",
 	"components": {
 		"examples": {},
 		"headers": {},
@@ -6,60 +7,137 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"Device": {
+			"Stat": {
 				"properties": {
-					"name": {
-						"type": "string",
-						"description": "Device name"
+					"id": {}
+				},
+				"required": [
+					"id"
+				],
+				"type": "object",
+				"description": "Base type for Stat like types"
+			},
+			"Summary": {
+				"properties": {
+					"mean": {
+						"type": "number",
+						"format": "double"
 					},
-					"id": {
+					"min": {
+						"type": "number",
+						"format": "double"
+					},
+					"max": {
 						"type": "number",
 						"format": "double"
 					}
 				},
 				"required": [
-					"name",
-					"id"
+					"mean",
+					"min",
+					"max"
 				],
 				"type": "object"
 			},
-			"Location": {
+			"SummaryReading": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Stat"
+					},
+					{
+						"properties": {
+							"humidity": {
+								"$ref": "#/components/schemas/Summary"
+							},
+							"pressure": {
+								"$ref": "#/components/schemas/Summary"
+							},
+							"temperature": {
+								"$ref": "#/components/schemas/Summary"
+							},
+							"location": {
+								"type": "string"
+							},
+							"type": {
+								"type": "string"
+							},
+							"label": {
+								"type": "string"
+							},
+							"last": {
+								"type": "number",
+								"format": "double"
+							},
+							"first": {
+								"type": "number",
+								"format": "double"
+							},
+							"ts": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"humidity",
+							"pressure",
+							"temperature",
+							"location",
+							"type",
+							"label",
+							"last",
+							"first",
+							"ts"
+						],
+						"type": "object"
+					}
+				]
+			},
+			"DateRange": {
 				"properties": {
-					"alitude": {
-						"type": "number",
-						"format": "double",
-						"description": "Altitude in metres above sealevel"
-					},
-					"latitude": {
-						"type": "number",
-						"format": "double",
-						"description": "Latitude in degrees. Positive for north, negative for south"
-					},
-					"longitude": {
-						"type": "number",
-						"format": "double",
-						"description": "Longitude in degrees. Positive for west, negative for east"
-					},
-					"description": {
+					"start": {
 						"type": "string",
-						"description": "Description"
+						"format": "date-time"
 					},
-					"name": {
+					"end": {
 						"type": "string",
-						"description": "Location name"
-					},
-					"id": {
-						"type": "number",
-						"format": "double",
-						"description": "Id"
+						"format": "date-time"
 					}
 				},
 				"required": [
-					"description",
-					"name",
-					"id"
+					"start",
+					"end"
 				],
-				"type": "object"
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SummaryReadings": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Stat"
+					},
+					{
+						"properties": {
+							"dateRange": {
+								"$ref": "#/components/schemas/DateRange"
+							},
+							"location": {
+								"type": "string"
+							},
+							"data": {
+								"items": {
+									"$ref": "#/components/schemas/SummaryReading"
+								},
+								"type": "array"
+							}
+						},
+						"required": [
+							"dateRange",
+							"location",
+							"data"
+						],
+						"type": "object"
+					}
+				]
 			},
 			"Reading": {
 				"properties": {
@@ -109,55 +187,6 @@
 					"id"
 				],
 				"type": "object"
-			},
-			"Payload": {
-				"properties": {
-					"data": {
-						"items": {
-							"$ref": "#/components/schemas/Reading"
-						},
-						"type": "array",
-						"description": "Array of Reading entries"
-					},
-					"hash": {
-						"type": "string",
-						"description": "Hash of data for integrity purposes"
-					}
-				},
-				"required": [
-					"data",
-					"hash"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Stat": {
-				"properties": {
-					"id": {}
-				},
-				"required": [
-					"id"
-				],
-				"type": "object",
-				"description": "Base type for Stat like types"
-			},
-			"DateRange": {
-				"properties": {
-					"start": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"end": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"required": [
-					"start",
-					"end"
-				],
-				"type": "object",
-				"additionalProperties": false
 			},
 			"ReadingStat": {
 				"properties": {
@@ -260,109 +289,131 @@
 					}
 				]
 			},
-			"Summary": {
+			"Partial_Reading_": {
 				"properties": {
-					"mean": {
+					"id": {},
+					"ts": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "Timestamp as unix timestamp numeric"
 					},
-					"min": {
+					"when": {
+						"type": "string",
+						"format": "date-time",
+						"description": "Timestamp as Date"
+					},
+					"humidity": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"description": "Humidity as percentage (0-100)"
 					},
-					"max": {
+					"pressure": {
+						"type": "number",
+						"format": "double",
+						"description": "Pressure in Pascals"
+					},
+					"temperature": {
+						"type": "number",
+						"format": "double",
+						"description": "Temperature in Kelvin"
+					},
+					"location": {
+						"type": "string",
+						"description": "Location"
+					},
+					"device": {
+						"type": "string",
+						"description": "Device"
+					}
+				},
+				"type": "object",
+				"description": "Make all properties in T optional"
+			},
+			"IPayload": {
+				"properties": {
+					"data": {
+						"items": {},
+						"type": "array"
+					},
+					"hash": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"data",
+					"hash"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Location": {
+				"properties": {
+					"altitude": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Altitude in metres above sealevel"
+					},
+					"latitude": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Latitude in degrees. Positive for north, negative for south"
+					},
+					"longitude": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Longitude in degrees. Positive for west, negative for east"
+					},
+					"orderNo": {
+						"type": "number",
+						"format": "double",
+						"description": "Order"
+					},
+					"isActive": {
+						"type": "boolean",
+						"description": "Is active"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description"
+					},
+					"name": {
+						"type": "string",
+						"description": "Location name"
+					},
+					"id": {
+						"type": "number",
+						"format": "double",
+						"nullable": true,
+						"description": "Id"
+					}
+				},
+				"required": [
+					"orderNo",
+					"isActive",
+					"description",
+					"name"
+				],
+				"type": "object"
+			},
+			"Device": {
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Device name"
+					},
+					"id": {
 						"type": "number",
 						"format": "double"
 					}
 				},
 				"required": [
-					"mean",
-					"min",
-					"max"
+					"name",
+					"id"
 				],
 				"type": "object"
-			},
-			"SummaryReading": {
-				"allOf": [
-					{
-						"$ref": "#/components/schemas/Stat"
-					},
-					{
-						"properties": {
-							"humidity": {
-								"$ref": "#/components/schemas/Summary"
-							},
-							"pressure": {
-								"$ref": "#/components/schemas/Summary"
-							},
-							"temperature": {
-								"$ref": "#/components/schemas/Summary"
-							},
-							"location": {
-								"type": "string"
-							},
-							"type": {
-								"type": "string"
-							},
-							"label": {
-								"type": "string"
-							},
-							"last": {
-								"type": "number",
-								"format": "double"
-							},
-							"first": {
-								"type": "number",
-								"format": "double"
-							},
-							"ts": {
-								"type": "number",
-								"format": "double"
-							}
-						},
-						"required": [
-							"humidity",
-							"pressure",
-							"temperature",
-							"location",
-							"type",
-							"label",
-							"last",
-							"first",
-							"ts"
-						],
-						"type": "object"
-					}
-				]
-			},
-			"SummaryReadings": {
-				"allOf": [
-					{
-						"$ref": "#/components/schemas/Stat"
-					},
-					{
-						"properties": {
-							"dateRange": {
-								"$ref": "#/components/schemas/DateRange"
-							},
-							"location": {
-								"type": "string"
-							},
-							"data": {
-								"items": {
-									"$ref": "#/components/schemas/SummaryReading"
-								},
-								"type": "array"
-							}
-						},
-						"required": [
-							"dateRange",
-							"location",
-							"data"
-						],
-						"type": "object"
-					}
-				]
 			}
 		},
 		"securitySchemes": {}
@@ -378,81 +429,37 @@
 			"name": "Kim Dadswell"
 		}
 	},
-	"openapi": "3.0.0",
 	"paths": {
-		"/devices": {
+		"/summary/hourly/{location}/{start}/{end}": {
 			"get": {
-				"operationId": "GetAll",
+				"operationId": "GetHourlySummary",
 				"responses": {
 					"200": {
-						"description": "Ok",
+						"description": "Array of SummaryReading",
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Device"
-									},
-									"type": "array"
+									"$ref": "#/components/schemas/SummaryReadings"
 								}
 							}
 						}
 					}
 				},
-				"description": "Retrieves all devices",
+				"description": "Returns a hourly summary for the given location and date time range.",
 				"tags": [
-					"devices"
-				],
-				"security": [],
-				"parameters": []
-			}
-		},
-		"/locations": {
-			"get": {
-				"operationId": "GetLocations",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Location"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"description": "Retrieves all locations",
-				"tags": [
-					"locations"
-				],
-				"security": [],
-				"parameters": []
-			}
-		},
-		"/payload/{start}/{end}": {
-			"get": {
-				"operationId": "GetPayload",
-				"responses": {
-					"200": {
-						"description": "Payload object",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Payload"
-								}
-							}
-						}
-					}
-				},
-				"description": "Retrieves Payload object for the date range",
-				"tags": [
-					"payload"
+					"summary"
 				],
 				"security": [],
 				"parameters": [
+					{
+						"description": "Location to report on",
+						"in": "path",
+						"name": "location",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
 					{
 						"description": "timestamp",
 						"in": "path",
@@ -476,63 +483,271 @@
 				]
 			}
 		},
-		"/payload/save": {
-			"put": {
-				"operationId": "SavePayload",
+		"/summary/daily/{location}/{start}/{end}": {
+			"get": {
+				"operationId": "GetDailySummary",
 				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"description": "Save payload object",
-				"tags": [
-					"payload"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"description": "Payload object",
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/Payload",
-								"description": "Payload object"
+					"200": {
+						"description": "Array of SummaryReading",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SummaryReadings"
+								}
 							}
 						}
 					}
-				}
+				},
+				"description": "\r\nReturns a daily summary for the given location and date time range.",
+				"tags": [
+					"summary"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Location to report on",
+						"in": "path",
+						"name": "location",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "timestamp",
+						"in": "path",
+						"name": "start",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "timestamp",
+						"in": "path",
+						"name": "end",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
-		"/payload/delete": {
-			"put": {
-				"operationId": "DeletePayload",
+		"/summary/all/{location}": {
+			"get": {
+				"operationId": "GetTotalSummary",
 				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"description": "Delete readings according to Ids",
-				"tags": [
-					"payload"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"description": "Array of Reading Ids",
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array",
-								"description": "Array of Reading Ids"
+					"200": {
+						"description": "SummaryReading object",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SummaryReading"
+								}
 							}
 						}
 					}
-				}
+				},
+				"description": "Returns the total summary for the given location",
+				"tags": [
+					"summary"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Location to report on",
+						"in": "path",
+						"name": "location",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/summary/recompute/{summaryType}/{location}/{start}/{end}": {
+			"post": {
+				"operationId": "RecomputeSummaries",
+				"responses": {
+					"200": {
+						"description": "The number of updated records",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "number",
+									"format": "double"
+								}
+							}
+						}
+					}
+				},
+				"description": "Recomputes all summary values for a given summary type, location, and date range.\r\nThis recalculates the aggregated values from source readings.",
+				"tags": [
+					"summary"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "The type of summary ('daily' or 'hourly')",
+						"in": "path",
+						"name": "summaryType",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Location to recompute summaries for",
+						"in": "path",
+						"name": "location",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Start timestamp",
+						"in": "path",
+						"name": "start",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "End timestamp",
+						"in": "path",
+						"name": "end",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/stats/{location}/{start}/{end}": {
+			"get": {
+				"operationId": "GetAllStatsDateRange",
+				"responses": {
+					"200": {
+						"description": "WeatherStats object",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/WeatherStats"
+								}
+							}
+						}
+					}
+				},
+				"description": "Gets the weather stats computed for the location and time range",
+				"tags": [
+					"stats"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Location to query",
+						"in": "path",
+						"name": "location",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "timestamp as number",
+						"in": "path",
+						"name": "start",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "timestamp as number",
+						"in": "path",
+						"name": "end",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/stats/{location}/{statSpan}": {
+			"get": {
+				"operationId": "GetStats",
+				"responses": {
+					"200": {
+						"description": "WeatherStats object",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/WeatherStats"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the weather stats according the key from the cache",
+				"tags": [
+					"stats"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Location",
+						"in": "path",
+						"name": "location",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "StatSpan (24Hrs, 30Days, 90Days or All)",
+						"in": "path",
+						"name": "statSpan",
+						"required": true,
+						"schema": {
+							"$ref": "#/components/schemas/StatSpan"
+						}
+					}
+				]
+			}
+		},
+		"/stats/dbstats": {
+			"get": {
+				"operationId": "GetDbData",
+				"responses": {
+					"200": {
+						"description": "DbStats",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DbStats"
+								}
+							}
+						}
+					}
+				},
+				"description": "returns an object showing first and last entry dates and record count in database",
+				"tags": [
+					"stats"
+				],
+				"security": [],
+				"parameters": []
 			}
 		},
 		"/readings/{location}/{start}/{end}": {
@@ -696,7 +911,7 @@
 						}
 					}
 				},
-				"description": "Retrieve first TopN Reading order by descending data (latest first)",
+				"description": "Retrieves first topN Readings ordered by descending date (latest first)",
 				"tags": [
 					"readings"
 				],
@@ -746,9 +961,54 @@
 				}
 			}
 		},
-		"/readings/ids": {
+		"/readings/ids/{startTs}/{endTs}": {
 			"get": {
 				"operationId": "GetIds",
+				"responses": {
+					"200": {
+						"description": "Array of string",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"type": "string"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieves an array of ids of all Readings",
+				"tags": [
+					"readings"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "startTs",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "path",
+						"name": "endTs",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/readings/ids": {
+			"get": {
+				"operationId": "GetAllIds",
 				"responses": {
 					"200": {
 						"description": "Array of string",
@@ -772,50 +1032,34 @@
 				"parameters": []
 			}
 		},
-		"/stats/{location}/{start}/{end}": {
+		"/readings/extreme/{locationId}": {
 			"get": {
-				"operationId": "GetAllStatsDateRange",
+				"operationId": "GetExtremeReadings",
 				"responses": {
 					"200": {
-						"description": "WeatherStats object",
+						"description": "Array of extreme Reading",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/WeatherStats"
+									"items": {
+										"$ref": "#/components/schemas/Reading"
+									},
+									"type": "array"
 								}
 							}
 						}
 					}
 				},
-				"description": "Gets the weather stats computed for the location and time range",
+				"description": "Retrieves extreme readings for a location",
 				"tags": [
-					"stats"
+					"readings"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "Location to query",
+						"description": "Location id",
 						"in": "path",
-						"name": "location",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"description": "timestamp as number",
-						"in": "path",
-						"name": "start",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"description": "timestamp as number",
-						"in": "path",
-						"name": "end",
+						"name": "locationId",
 						"required": true,
 						"schema": {
 							"format": "double",
@@ -825,208 +1069,411 @@
 				]
 			}
 		},
-		"/stats/{location}/{statSpan}": {
+		"/readings/extreme/delta/{locationId}/{temperatureDelta}/{humidityDelta}/{pressureDelta}": {
 			"get": {
-				"operationId": "GetStats",
+				"operationId": "GetExtremeDeltaReadings",
+				"responses": {
+					"200": {
+						"description": "Array of extreme delta Reading",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Reading"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieves extreme delta readings for a location",
+				"tags": [
+					"readings"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Location id",
+						"in": "path",
+						"name": "locationId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Temperature delta",
+						"in": "path",
+						"name": "temperatureDelta",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Humidity delta",
+						"in": "path",
+						"name": "humidityDelta",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Pressure delta",
+						"in": "path",
+						"name": "pressureDelta",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/readings/update/{id}": {
+			"put": {
+				"operationId": "UpdateReading",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/WeatherStats"
+									"$ref": "#/components/schemas/Reading"
 								}
 							}
 						}
 					}
 				},
-				"description": "Get the weather stats according the key from the cache",
 				"tags": [
-					"stats"
+					"readings"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "Location",
 						"in": "path",
-						"name": "location",
+						"name": "id",
 						"required": true,
 						"schema": {
 							"type": "string"
 						}
-					},
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Reading"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/readings/{id}": {
+			"patch": {
+				"operationId": "PatchReading",
+				"responses": {
+					"200": {
+						"description": "Updated Reading",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Reading"
+								}
+							}
+						}
+					}
+				},
+				"description": "Partially updates a reading by id",
+				"tags": [
+					"readings"
+				],
+				"security": [],
+				"parameters": [
 					{
-						"description": "StatSpan (24Hrs, 30Days, 90Days or All)",
+						"description": "Reading id",
 						"in": "path",
-						"name": "statSpan",
+						"name": "id",
 						"required": true,
 						"schema": {
-							"$ref": "#/components/schemas/StatSpan"
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Partial reading data to update",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Partial_Reading_",
+								"description": "Partial reading data to update"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteReading",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Deletes a reading by id",
+				"tags": [
+					"readings"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Reading id to delete",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
 						}
 					}
 				]
 			}
 		},
-		"/stats/dbstats": {
+		"/payload/{start}/{end}": {
 			"get": {
-				"operationId": "GetDbData",
+				"operationId": "GetPayload",
 				"responses": {
 					"200": {
-						"description": "DbStats",
+						"description": "Payload object",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/DbStats"
+									"$ref": "#/components/schemas/IPayload"
 								}
 							}
 						}
 					}
 				},
-				"description": "returns an object showing first and last entry dates and record count in database",
+				"description": "Retrieves Payload object for the date range",
 				"tags": [
-					"stats"
+					"payload"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "timestamp",
+						"in": "path",
+						"name": "start",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "timestamp",
+						"in": "path",
+						"name": "end",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/payload": {
+			"put": {
+				"operationId": "SavePayload",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Save payload object",
+				"tags": [
+					"payload"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Payload object",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/IPayload",
+								"description": "Payload object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/payload/delete": {
+			"post": {
+				"operationId": "DeletePayload",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"description": "Delete readings according to Ids",
+				"tags": [
+					"payload"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Array of Reading Ids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array",
+								"description": "Array of Reading Ids"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/locations": {
+			"get": {
+				"operationId": "GetLocations",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Location"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieves all locations",
+				"tags": [
+					"locations"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "includeInactive",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "AddLocation",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Location"
+								}
+							}
+						}
+					}
+				},
+				"description": "Insert a new location",
+				"tags": [
+					"locations"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "location object",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Location",
+								"description": "location object"
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"operationId": "UpdateLocation",
+				"responses": {
+					"200": {
+						"description": "update location object",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Location"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update a location",
+				"tags": [
+					"locations"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "location object",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Location",
+								"description": "location object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/devices": {
+			"get": {
+				"operationId": "GetAll",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Device"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieves all devices",
+				"tags": [
+					"devices"
 				],
 				"security": [],
 				"parameters": []
-			}
-		},
-		"/summary/hourly/{location}/{start}/{end}": {
-			"get": {
-				"operationId": "GetHourlySummary",
-				"responses": {
-					"200": {
-						"description": "Array of SummaryReading",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/SummaryReadings"
-								}
-							}
-						}
-					}
-				},
-				"description": "Returns a hourly summary for the given location and date time range.",
-				"tags": [
-					"summary"
-				],
-				"security": [],
-				"parameters": [
-					{
-						"description": "Location to report on",
-						"in": "path",
-						"name": "location",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"description": "timestamp",
-						"in": "path",
-						"name": "start",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"description": "timestamp",
-						"in": "path",
-						"name": "end",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/summary/daily/{location}/{start}/{end}": {
-			"get": {
-				"operationId": "GetDailySummary",
-				"responses": {
-					"200": {
-						"description": "Array of SummaryReading",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/SummaryReadings"
-								}
-							}
-						}
-					}
-				},
-				"description": "\r\nReturns a daily summary for the given location and date time range.",
-				"tags": [
-					"summary"
-				],
-				"security": [],
-				"parameters": [
-					{
-						"description": "Location to report on",
-						"in": "path",
-						"name": "location",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"description": "timestamp",
-						"in": "path",
-						"name": "start",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"description": "timestamp",
-						"in": "path",
-						"name": "end",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/summary/all/{location}": {
-			"get": {
-				"operationId": "GetTotalSummary",
-				"responses": {
-					"200": {
-						"description": "SummaryReading object",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/SummaryReading"
-								}
-							}
-						}
-					}
-				},
-				"description": "Returns the total summary for the given location",
-				"tags": [
-					"summary"
-				],
-				"security": [],
-				"parameters": [
-					{
-						"description": "Location to report on",
-						"in": "path",
-						"name": "location",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
 			}
 		}
 	},

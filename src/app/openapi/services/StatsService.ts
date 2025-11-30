@@ -14,7 +14,7 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class StatsService {
 
@@ -29,10 +29,10 @@ export class StatsService {
      * @throws ApiError
      */
     public getAllStatsDateRange(
-location: string,
-start: number,
-end: number,
-): Observable<WeatherStats> {
+        location: string,
+        start: number,
+        end: number,
+    ): Observable<WeatherStats> {
         return __request(OpenAPI, this.http, {
             method: 'GET',
             url: '/stats/{location}/{start}/{end}',
@@ -48,13 +48,13 @@ end: number,
      * Get the weather stats according the key from the cache
      * @param location Location
      * @param statSpan StatSpan (24Hrs, 30Days, 90Days or All)
-     * @returns WeatherStats Ok
+     * @returns WeatherStats WeatherStats object
      * @throws ApiError
      */
     public getStats(
-location: string,
-statSpan: StatSpan,
-): Observable<WeatherStats> {
+        location: string,
+        statSpan: StatSpan,
+    ): Observable<WeatherStats> {
         return __request(OpenAPI, this.http, {
             method: 'GET',
             url: '/stats/{location}/{statSpan}',

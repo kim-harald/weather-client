@@ -10,3 +10,4 @@ export type Device = {
     name: string;
     id: number;
 };
+

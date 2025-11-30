@@ -1,20 +1,12 @@
 {
-  "/api/*": {
+  "/api": {
     "target": "https://localhost:8316",
     "secure": false,
-    "logLevel": "debug",
-    "changeOrigin": true,
-    "pathRewrite": {
-      "^/api": "https://localhost:8316/api"
-    }
+    "changeOrigin": true
   },
-  "/remote/api/*": {
+  "/remote/api": {
     "target": "https://gimel",
     "secure": false,
-    "logLevel": "debug",
-    "changeOrigin": true,
-    "pathRewrite": {
-      "^/api": "https://gimel/api"
-    }
+    "changeOrigin": true
   }
 }

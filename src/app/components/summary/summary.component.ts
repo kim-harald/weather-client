@@ -1,19 +1,22 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MqttService } from 'ngx-mqtt';
-import { Observable, Subject, Subscription, concatMap, map, of } from 'rxjs';
+import { Observable, Subject, concatMap, map, of, takeUntil } from 'rxjs';
 import { SummaryReading, SummaryReadings, SummaryService } from '@openapi';
 import { DataRow, Mode, SummaryType } from '@models';
-import { convertToDataRows, kChartOptions, unsubscribeAll } from '@common';
+import { convertToDataRows, kChartOptions } from '@common';
 import { GlobalService, ListenersService } from '@services';
+import { WeatherChartComponent } from '../weather-chart/weather-chart.component';
 
 @Component({
   selector: 'app-summary',
+  standalone: true,
+  imports: [CommonModule, WeatherChartComponent],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
 })
 export class SummaryComponent implements OnInit, OnDestroy {
-  private _location = 'dalet';
-  private _subscriptions: Record<string, Subscription> = {};
+  private readonly destroy$ = new Subject<void>();
 
   @Input()
   public span: number = 48;
@@ -33,35 +36,40 @@ export class SummaryComponent implements OnInit, OnDestroy {
     private readonly summaryService: SummaryService,
     private readonly listenersService: ListenersService,
     public readonly globalService: GlobalService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this._subscriptions['location'] = this.globalService.location$.subscribe({
-      next: (location) => this.setup(location),
-      error: (err) => console.error(err),
-    });
+    this.globalService.location$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (location) => this.setup(location),
+        error: (err) => console.error(err),
+      });
   }
 
   private setup(location: string): void {
-    this._subscriptions[location] = this.getSummary(
-      location,
-      this.summaryType
-    ).subscribe({
-      next: (summaryData) => {
-        this.DataRows = convertToDataRows(
-          summaryData,
-          location,
-          this.summaryType
-        );
-      },
-      error: console.error,
-    });
+    this.getSummary(location, this.summaryType)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (summaryData) => {
+          this.DataRows = convertToDataRows(
+            summaryData,
+            location,
+            this.summaryType
+          );
+        },
+        error: console.error,
+      });
 
-    this._subscriptions[`${location}-mqtt`] = this.listenersService
+    this.listenersService
       .summary()
       .pipe(
-        concatMap(summaryLocation => this.getSummary(summaryLocation, this.summaryType))
-      ).subscribe({
+        takeUntil(this.destroy$),
+        concatMap((summaryLocation) =>
+          this.getSummary(summaryLocation, this.summaryType)
+        )
+      )
+      .subscribe({
         next: (summaryData) => {
           this.DataRows = convertToDataRows(
             summaryData,
@@ -74,7 +82,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    unsubscribeAll(this._subscriptions);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private getSummary(

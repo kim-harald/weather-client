@@ -7,15 +7,23 @@ export type Location = {
     /**
      * Altitude in metres above sealevel
      */
-    alitude?: number;
+    altitude?: number | null;
     /**
      * Latitude in degrees. Positive for north, negative for south
      */
-    latitude?: number;
+    latitude?: number | null;
     /**
      * Longitude in degrees. Positive for west, negative for east
      */
-    longitude?: number;
+    longitude?: number | null;
+    /**
+     * Order
+     */
+    orderNo: number;
+    /**
+     * Is active
+     */
+    isActive: boolean;
     /**
      * Description
      */
@@ -27,5 +35,6 @@ export type Location = {
     /**
      * Id
      */
-    id: number;
+    id?: number | null;
 };
+

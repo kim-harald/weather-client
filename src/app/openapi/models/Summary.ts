@@ -8,3 +8,4 @@ export type Summary = {
     min: number;
     max: number;
 };
+

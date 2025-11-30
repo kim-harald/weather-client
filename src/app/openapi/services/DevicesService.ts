@@ -12,7 +12,7 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class DevicesService {
 

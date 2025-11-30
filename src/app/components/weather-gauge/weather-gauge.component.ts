@@ -7,10 +7,13 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { delay } from 'src/app/common/common';
 
 @Component({
   selector: 'app-weather-gauge',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './weather-gauge.component.html',
   styleUrls: ['./weather-gauge.component.scss'],
 })

@@ -4,6 +4,7 @@ import {
   Subject,
   concatMap,
   forkJoin,
+  of,
   takeUntil,
 } from 'rxjs';
 import { Mode } from '@models';
@@ -51,38 +52,41 @@ export class GlobalService {
   ) {
     locationService
       .getLocations()
-      .pipe(takeUntil(this._destroy))
-      .subscribe((locations) => {
-        if (locations && locations.length > 0) {
-          this.location = locations[0].name;
-          this.locations = locations;
-          this.locations$.next(locations.filter(o => o.name !== 'gimel'));
-        }
-      });
-
-    this.locations$
       .pipe(
         takeUntil(this._destroy),
         concatMap((locations) => {
+          if (!locations || locations.length === 0) {
+            return of(null);
+          }
+
+          this.location = locations[0].name;
+          this.locations = locations;
+          this.locations$.next(locations);
+
+          // Fetch readings for all locations
+          const end = new Date();
+          const start = new Date();
+          start.setMinutes(start.getMinutes() - 120);
+
           const readings$: Record<string, Observable<Reading[]>> = {};
           locations.forEach((location) => {
-            const start = new Date();
-            const end = new Date();
-            start.setMinutes(start.getMinutes() - 120);
             readings$[location.name] = readingService.getReadings(
               location.name,
               start.valueOf(),
               end.valueOf()
             );
           });
+
           return forkJoin(readings$);
         })
       )
       .subscribe({
         next: (data) => {
-          console.info(data);
-          this.readings$.next(data);
+          if (data) {
+            this.readings$.next(data);
+          }
         },
+        error: (err) => console.error('Error initializing global service:', err),
       });
   }
 

@@ -8,7 +8,8 @@ import type { Stat } from './Stat';
 import type { SummaryReading } from './SummaryReading';
 
 export type SummaryReadings = (Stat & {
-dateRange: DateRange;
-location: string;
-data: Array<SummaryReading>;
+    dateRange: DateRange;
+    location: string;
+    data: Array<SummaryReading>;
 });
+

@@ -1,0 +1,29 @@
+<app-battery [device]="location"></app-battery>
+<app-gauge-group></app-gauge-group>
+
+<div>
+  <app-stats
+    class="container"
+    [mode]="mode"
+    [statSpan]="'All'"
+    title="Alle"
+  ></app-stats>
+  <app-stats
+    class="container"
+    [mode]="mode"
+    [statSpan]="'1Month'"
+    title="Siste månad"
+  ></app-stats>
+  <app-stats
+    class="container"
+    [mode]="mode"
+    [statSpan]="'24Hrs'"
+    title="Siste 24 timer"
+  ></app-stats>
+</div>
+<app-select-location [locations]="locations"></app-select-location>
+@if (!isMobile) {
+  <app-detail [span]="24"></app-detail>
+  <app-summary [summaryType]="'hour'" [span]="48"></app-summary>
+  <app-summary [summaryType]="'day'" [span]="60"></app-summary>
+}

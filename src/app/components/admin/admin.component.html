@@ -1,0 +1,62 @@
+<h2>Locations</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Order</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Longitude</th>
+            <th>Latitude</th>
+            <th>Altitude</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let location of locations" data-id="{{ location.id}}">
+            <td>{{ location.orderNo }}</td>
+            <td>{{ location.name }}</td>
+            <td>{{ location.description }}</td>
+            <td>{{ location.longitude }}</td>
+            <td>{{ location.latitude }}</td>
+            <td>{{ location.altitude }}</td>
+            <td><input type="checkbox" [checked]="location.isActive" ></td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Recompute Summaries</h2>
+<div class="recompute-form">
+    <div class="form-row">
+        <label for="location">Location:</label>
+        <select id="location" [(ngModel)]="selectedLocation">
+            <option *ngFor="let loc of locations" [value]="loc.name">{{ loc.description }}</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="summaryType">Summary Type:</label>
+        <select id="summaryType" [(ngModel)]="summaryType">
+            <option value="daily">Daily</option>
+            <option value="hourly">Hourly</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" [(ngModel)]="startDate">
+    </div>
+
+    <div class="form-row">
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" [(ngModel)]="endDate">
+    </div>
+
+    <div class="form-row">
+        <button (click)="recomputeSummaries()" [disabled]="isRecomputing">
+            {{ isRecomputing ? 'Recomputing...' : 'Recompute Summaries' }}
+        </button>
+    </div>
+
+    <div class="result-message" *ngIf="resultMessage" [class.error]="resultMessage.startsWith('Error')">
+        {{ resultMessage }}
+    </div>
+</div>

@@ -1,5 +1,5 @@
 
-@import "../../../assets/variables.scss";
+@use "../../../assets/variables" as vars;
 
 table {
   position: absolute;
@@ -26,15 +26,15 @@ table {
 }
 
 .temperature > table caption {
-    background-color: $red;
+    background-color: vars.$red;
 }
 
 .pressure > table caption {
-    background-color: $yellow;
+    background-color: vars.$yellow;
 }
 
 .humidity > table caption {
-    background-color: $blue;
+    background-color: vars.$blue;
 }
 
 .container {

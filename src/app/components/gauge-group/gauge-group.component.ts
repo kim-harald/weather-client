@@ -5,20 +5,23 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import {
   convertValue,
   rotate,
   rounded,
-  unsubscribeAll,
 } from '@common';
 import { Mode } from '@models';
 import { Reading } from '@openapi';
 import { ListenersService } from '@services';
 import { Subject, Subscription, concatMap, takeUntil } from 'rxjs';
 import { GlobalService } from 'src/app/services/global.service';
+import { WeatherGaugeComponent } from '../weather-gauge/weather-gauge.component';
 
 @Component({
   selector: 'app-gauge-group',
+  standalone: true,
+  imports: [CommonModule, WeatherGaugeComponent],
   templateUrl: './gauge-group.component.html',
   styleUrls: ['./gauge-group.component.scss'],
 })
@@ -37,8 +40,7 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
     pressure: {},
   };
 
-  private _subscriptions: Record<string, Subscription> = {};
-  private destroy: Subject<void> = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   private samples: Record<
     Mode,
@@ -70,19 +72,29 @@ export class GaugeGroupComponent implements OnInit, OnDestroy {
     Object.keys(Mode).forEach((item) => {
       const mode = item as Mode;
       this.samples[mode][location] = [];
-      this._subscriptions[mode as Mode] = this.listenService
+      
+      this.listenService
         .sample(location, mode)
+        .pipe(takeUntil(this.destroy$))
         .subscribe((value) => {
           this.sample[mode as Mode][location] = convertValue(mode, value);
         });
-      this.listenService.trend(location).subscribe(data => {
-        this.trend[mode][location] = data[mode];
-      })
     });
+
+    this.listenService
+      .trend(location)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => {
+        Object.keys(Mode).forEach((item) => {
+          const mode = item as Mode;
+          this.trend[mode][location] = data[mode];
+        });
+      });
   }
 
   ngOnDestroy(): void {
-    unsubscribeAll(this._subscriptions);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   public handleClick(mode: Mode): void {

@@ -5,37 +5,38 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { GlobalService, ListenersService } from '@services';
 import {
   Observable,
   Subject,
-  Subscription,
   concatMap,
   forkJoin,
   map,
   merge,
   of,
+  takeUntil,
 } from 'rxjs';
 import {
   kChartOptions,
   convertToDataRows,
   rotate,
-  unsubscribeAll,
 } from '@common';
 import { DataRow } from 'src/app/models/datarow';
 import { DateRange, Mode } from '@models';
 import { Reading, ReadingsService, Location, LocationsService } from '@openapi';
+import { WeatherChartComponent } from '../weather-chart/weather-chart.component';
 
 @Component({
   selector: 'app-detail',
+  standalone: true,
+  imports: [CommonModule, WeatherChartComponent],
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss'],
 })
 export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
-  private _subscriptions: Record<string, Subscription> = {};
+  private readonly destroy$ = new Subject<void>();
   private _readings: Record<string, Reading[]> = {};
-
-  private _isReady$: Subject<void> = new Subject<void>();
 
   public DetailDataRows: Record<Mode, DataRow[]> = {
     temperature: [],
@@ -61,43 +62,45 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.setInitialData();
-    this.globalService.locations$.subscribe(locations => {
-      this.setMqttListen(locations)
-    })
+    this.globalService.locations$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(locations => {
+        this.setMqttListen(locations);
+      });
   }
 
   ngOnDestroy(): void {
-    unsubscribeAll(this._subscriptions);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private setInitialData(): void {
-    this.globalService.readings$.subscribe({
-      next: (data) => {
-        this._readings = data;
-        this.DetailDataRows = convertToDataRows(
-          this._readings[this.globalService.location],
-          this.globalService.location,
-          '5min'
-        );
-      },
-      error: (err) => console.error(err),
-      complete: () => {
-        console.info('Complete init');
-      },
-    });
+    this.globalService.readings$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this._readings = data;
+          this.updateDataRows();
+        },
+        error: (err) => console.error(err),
+      });
 
     this.globalService.location$
-    .subscribe({
-      next: () => {
-        this.DetailDataRows = convertToDataRows(
-          this._readings[this.globalService.location],
-          this.globalService.location,
-          '5min'
-        );
-      },
-      error: (err) => console.error(err),
-      complete: () => {},
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.updateDataRows(),
+        error: (err) => console.error(err),
+      });
+  }
+
+  private updateDataRows(): void {
+    if (this._readings[this.globalService.location]) {
+      this.DetailDataRows = convertToDataRows(
+        this._readings[this.globalService.location],
+        this.globalService.location,
+        '5min'
+      );
+    }
   }
 
   private setMqttListen(locations: Location[]): void {
@@ -105,19 +108,15 @@ export class DetailComponent implements OnInit, OnDestroy, AfterViewInit {
     locations
       .map((location) => location.name)
       .forEach((name) => {
-        this._subscriptions[`mqtt:${name}`] = this.listenersService
+        this.listenersService
           .reading(name)
+          .pipe(takeUntil(this.destroy$))
           .subscribe({
             next: (reading) => {
               rotate(this._readings[name], reading, this.span);
-              console.log(name);
               counter--;
               if (counter === 0) {
-                this.DetailDataRows = convertToDataRows(
-                  this._readings[this.globalService.location],
-                  this.globalService.location,
-                  '5min'
-                );
+                this.updateDataRows();
                 counter = locations.length;
               }
             },

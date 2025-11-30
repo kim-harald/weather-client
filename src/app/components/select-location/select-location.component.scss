@@ -1,17 +1,17 @@
-@import '../../../assets/variables.scss';
+@use '../../../assets/variables' as vars;
 
 .item:hover {
     cursor: pointer;
-    background-color: $hover;
+    background-color: vars.$hover;
     border-radius: 4px;
 }
 
 .selected {
-    background-color: $select;
+    background-color: vars.$select;
 }
 
 .selected:hover {
-    background-color: transparentize($select, $amount: 0.1);
+    background-color: color-mix(in srgb, vars.$select 90%, transparent);
 }
 
 .item {
@@ -27,5 +27,5 @@
 }
 
 // .label:hover {
-//     background-color: $hover;
+//     background-color: vars.$hover;
 // }

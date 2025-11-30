@@ -6,8 +6,9 @@
 import type { Stat } from './Stat';
 
 export type DbStats = (Stat & {
-count: number;
-last: string;
-first: string;
-system: string;
+    count: number;
+    last: string;
+    first: string;
+    system: string;
 });
+
