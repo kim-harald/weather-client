@@ -3,15 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --proxy-config ./proxy.remote.conf.json",
+    "start": "ng serve --proxy-config ./proxy.local.conf.json",
     "start:local": "ng serve --proxy-config ./proxy.local.conf.json",
     "start:remote": "ng serve --proxy-config ./proxy.remote.conf.json",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "build:hub": "ng build --configuration production",
-    "postbuild:hub": "sh ./scripts/build.post.kimharald.no.sh"
+    "test": "ng test"
   },
   "private": true,
   "dependencies": {
